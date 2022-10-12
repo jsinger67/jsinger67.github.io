@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">8.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">9.</strong> Vanilla mode</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -703,7 +703,7 @@ use std::fmt::{Debug, Display, Error, Formatter};
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>    fn number(literal: &amp;Literal) -&gt; Result&lt;u32&gt; {
-        literal.literal.symbol.parse::&lt;u32&gt;().into_diagnostic()
+        literal.literal.text().parse::&lt;u32&gt;().into_diagnostic()
     }
 
     fn process_operation(&amp;mut self) -&gt; Result&lt;()&gt; {
@@ -1078,7 +1078,7 @@ find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
     type Error = &lt;u32 as FromStr&gt;::Err;
 
     fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; Result&lt;Self, Self::Error&gt; {
-        Ok(Self(number.symbol.parse::&lt;u32&gt;()?))
+        Ok(Self(number.text().parse::&lt;u32&gt;()?))
     }
 }
 <span class="boring">}
@@ -1091,6 +1091,186 @@ into the parse process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
 <a href="https://github.com/jsinger67/parol_basic_interpreter.git">basic interpreter example</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="vanilla-mode"><a class="header" href="#vanilla-mode">Vanilla mode</a></h1>
+<p>Although the auto-generation mode (switch <code>-g</code>, <code>--auto_generate</code>) is the recommended way to use
+<code>parol</code> you can alternatively work in <em>vanilla mode</em>.</p>
+<p>That means that <code>parol</code> skips generating AST types for you and it generates only a trait with
+semantic actions for each production of the expanded grammar instead of semantic actions for each
+non-terminal.</p>
+<p>This means that you gain more control although you may loose some comfort.</p>
+<p>Basically it is a matter of taste what mode you use. But keep in mind that growing complexity can
+have an impact on the maintainability of your software.</p>
+<p>So although you may loose full speed and give up some control you obtain maintainability when using
+the auto-generation mode.</p>
+<p>Actually <code>parol</code> itself was build in the simple mode at the first stages of its development (before
+version 0.9.3). But the implementation of new features required more and more changes in the grammar
+and showed the vulnerability of the existing implementation to changes in the input grammar.</p>
+<p>Anyway, this chapter is dedicated to the way <code>parol</code> functions without auto-generation.</p>
+<p>You may have a look at example
+<a href="https://github.com/jsinger67/parol/tree/main/examples/list">list</a> that uses the <em>vanilla mode</em> and
+actually shows how easy it is to work this way.</p>
+<p>We will elaborate this by implementing a list example in an alternative way.</p>
+<pre><code class="language-parol">%start List
+%title &quot;A possibly empty comma separated list of integers&quot;
+%comment &quot;A trailing comma is allowed.&quot;
+
+%%
+
+List: Items TrailingComma^;
+Items: Num {&quot;,&quot;^ Num} | ;
+Num: &quot;0|[1-9][0-9]*&quot;;
+TrailingComma: [&quot;,&quot;^];
+</code></pre>
+<p>Let's generate a new binary crate:</p>
+<p>You can try this grammar by calling</p>
+<pre><code class="language-shell">parol new --bin --path ./vanilla_list --tree
+</code></pre>
+<p>Open the generated crate and substitute the generated dummy grammar by the one above.
+Open the build.rs and delete the line 11:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>        .enable_auto_generation()
+<span class="boring">}
+</span></code></pre></pre>
+<p>For the sake of completeness delete the <code>-g</code> from the CLI equivalent in the comment at the
+beginning of <code>main</code>.</p>
+<p>Also change the <code>test.txt</code> to the content</p>
+<pre><code class="language-text">1, 2, 3, 4, 5, 6,
+</code></pre>
+<p>Now you can parse this text by calling</p>
+<pre><code class="language-shell">cargo run ./test.txt
+</code></pre>
+<p>This will actually result in a bunch of errors because <code>parol new</code> generated the source for the new
+crate in the spirit of auto-generation mode.</p>
+<p>But fortunately it is easy to correct the errors and create the basis for our <em>vanilla mode</em> crate.</p>
+<p>Replace the content of <code>vanilla_list_grammar.rs</code> with the following lines</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use id_tree::Tree;
+use miette::{IntoDiagnostic, Result, WrapErr};
+use parol_runtime::parser::{ParseTreeStackEntry, ParseTreeType};
+use std::fmt::{Debug, Display, Error, Formatter};
+
+use crate::vanilla_list_grammar_trait::VanillaListGrammarTrait;
+
+///
+/// The value range for the supported list elements
+///
+pub type DefinitionRange = usize;
+
+///
+/// Data structure that implements the semantic actions for our list grammar
+///
+#[derive(Debug, Default)]
+pub struct VanillaListGrammar {
+    pub numbers: Vec&lt;DefinitionRange&gt;,
+}
+
+impl VanillaListGrammar {
+    pub fn new() -&gt; Self {
+        VanillaListGrammar::default()
+    }
+
+    fn push(&amp;mut self, item: DefinitionRange) {
+        self.numbers.push(item)
+    }
+}
+
+impl Display for VanillaListGrammar {
+    fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
+        writeln!(
+            f,
+            &quot;[{}]&quot;,
+            self.numbers
+                .iter()
+                .map(|e| format!(&quot;{}&quot;, e))
+                .collect::&lt;Vec&lt;String&gt;&gt;()
+                .join(&quot;, &quot;)
+        )
+    }
+}
+
+impl VanillaListGrammarTrait for VanillaListGrammar {}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Now you should be able to run the parser</p>
+<pre><code class="language-shell">$ cargo run ./test.txt
+Finished dev [unoptimized + debuginfo] target(s) in 0.23s
+     Running `target\debug\vanilla_list.exe .\test.txt`
+Parsing took 3 milliseconds.
+Success!
+[]
+</code></pre>
+<p>Also some warnings should occur. But we resolve them soon.</p>
+<p>What we see here is that the parser accepts the input but doesn't collect the list items for us
+immediately (there are no list items in between <code>[</code> and <code>]</code>). The parser functions as an acceptor
+but without any processing.</p>
+<p>We need to do this on our own.</p>
+<p>To be able to 'hook' into the right production we need to examine the expanded grammar more closely
+than we had to in the auto-generation mode.</p>
+<p>So open the generated file <code>vanilla_list-exp-par</code> and look for the production where a <code>Num</code> token
+is accepted:</p>
+<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
+</code></pre>
+<p>Then we need to implement the semantic action for exactly this production number 5. We find the
+trait function to implement in the file <code>src\vanilla_list_grammar_trait.rs</code> and copy it into the
+impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl VanillaListGrammarTrait for VanillaListGrammar {
+    /// Semantic action for production 5:
+    ///
+    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    ///
+    fn num(&amp;mut self, _num: &amp;ParseTreeStackEntry, _parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
+      -&gt; Result&lt;()&gt; {
+        Ok(())
+    }
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Here we can implement our handling:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    /// Semantic action for production 5:
+    ///
+    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    ///
+    fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
+      -&gt; Result&lt;()&gt; {
+        let text = num.text(parse_tree)?;
+        let number = text
+            .parse::&lt;DefinitionRange&gt;()
+            .into_diagnostic()
+            .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
+        self.push(number);
+        Ok(())
+    }
+<span class="boring">}
+</span></code></pre></pre>
+<p>Now run the parser again</p>
+<pre><code class="language-shell">$ cargo run ./test.txt
+    Finished dev [unoptimized + debuginfo] target(s) in 1.54s
+     Running `target\debug\vanilla_list.exe .\test.txt`
+Parsing took 4 milliseconds.
+Success!
+[1, 2, 3, 4, 5, 6]
+</code></pre>
+<p>Yep! This worked fine.</p>
+<p>The remaining warnings can be removed be deleting the following lines in <code>main.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[macro_use]
+extern crate derive_builder;
+#[macro_use]
+extern crate function_name;
+<span class="boring">}
+</span></code></pre></pre>
+<p>Finally you can remove the references to crates <code>derive_builder</code> and <code>function_name</code> from
+<code>cargo.toml</code>.</p>
+<p>Note that you can`t use user defined types for your ATS types in vanilla mode because no AST types
+are generated at all. But actually you opted in to build the AST types on your own when you disable
+auto-generation mode.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="semantic-actions-1"><a class="header" href="#semantic-actions-1">Semantic actions</a></h1>
 <p>The <code>parol</code> parser generator creates traits with functions that represent semantic actions.
 The generated parser then calls these functions at parse time at the appropriate points with correct
@@ -1165,8 +1345,8 @@ implementation.</p>
     ///
     fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
       -&gt; Result&lt;()&gt; {
-        let symbol = num.symbol(parse_tree)?;
-        let number = symbol
+        let text = num.text(parse_tree)?;
+        let number = text
             .parse::&lt;DefinitionRange&gt;()
             .into_diagnostic()
             .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
@@ -1362,186 +1542,6 @@ that belongs to the grammar defined by
 I recommend to study this example more deeply and the approach will become obvious to you.</p>
 <p>As mentioned earlier the implementation can be found here:
 <a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="vanilla-mode"><a class="header" href="#vanilla-mode">Vanilla mode</a></h1>
-<p>Although the auto-generation mode (switch <code>-g</code>, <code>--auto_generate</code>) is the recommended way to use
-<code>parol</code> you can alternatively work in <em>vanilla mode</em>.</p>
-<p>That means that <code>parol</code> skips generating AST types for you and it generates only a trait with
-semantic actions for each production of the expanded grammar instead of semantic actions for each
-non-terminal.</p>
-<p>This means that you gain more control although you may loose some comfort.</p>
-<p>Basically it is a matter of taste what mode you use. But keep in mind that growing complexity can
-have an impact on the maintainability of your software.</p>
-<p>So although you may loose full speed and give up some control you obtain maintainability when using
-the auto-generation mode.</p>
-<p>Actually <code>parol</code> itself was build in the simple mode at the first stages of its development (before
-version 0.9.3). But the implementation of new features required more and more changes in the grammar
-and showed the vulnerability of the existing implementation to changes in the input grammar.</p>
-<p>Anyway, this chapter is dedicated to the way <code>parol</code> functions without auto-generation.</p>
-<p>You may have a look at example
-<a href="https://github.com/jsinger67/parol/tree/main/examples/list">list</a> that uses the <em>vanilla mode</em> and
-actually shows how easy it is to work this way.</p>
-<p>We will elaborate this by implementing a list example in an alternative way.</p>
-<pre><code class="language-parol">%start List
-%title &quot;A possibly empty comma separated list of integers&quot;
-%comment &quot;A trailing comma is allowed.&quot;
-
-%%
-
-List: Items TrailingComma^;
-Items: Num {&quot;,&quot;^ Num} | ;
-Num: &quot;0|[1-9][0-9]*&quot;;
-TrailingComma: [&quot;,&quot;^];
-</code></pre>
-<p>Let's generate a new binary crate:</p>
-<p>You can try this grammar by calling</p>
-<pre><code class="language-shell">parol new --bin --path ./vanilla_list --tree
-</code></pre>
-<p>Open the generated crate and substitute the generated dummy grammar by the one above.
-Open the build.rs and delete the line 11:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>        .enable_auto_generation()
-<span class="boring">}
-</span></code></pre></pre>
-<p>For the sake of completeness delete the <code>-g</code> from the CLI equivalent in the comment at the
-beginning of <code>main</code>.</p>
-<p>Also change the <code>test.txt</code> to the content</p>
-<pre><code class="language-text">1, 2, 3, 4, 5, 6,
-</code></pre>
-<p>Now you can parse this text by calling</p>
-<pre><code class="language-shell">cargo run ./test.txt
-</code></pre>
-<p>This will actually result in a bunch of errors because <code>parol new</code> generated the source for the new
-crate in the spirit of auto-generation mode.</p>
-<p>But fortunately it is easy to correct the errors and create the basis for our <em>vanilla mode</em> crate.</p>
-<p>Replace the content of <code>vanilla_list_grammar.rs</code> with the following lines</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use id_tree::Tree;
-use miette::{IntoDiagnostic, Result, WrapErr};
-use parol_runtime::parser::{ParseTreeStackEntry, ParseTreeType};
-use std::fmt::{Debug, Display, Error, Formatter};
-
-use crate::vanilla_list_grammar_trait::VanillaListGrammarTrait;
-
-///
-/// The value range for the supported list elements
-///
-pub type DefinitionRange = usize;
-
-///
-/// Data structure that implements the semantic actions for our list grammar
-///
-#[derive(Debug, Default)]
-pub struct VanillaListGrammar {
-    pub numbers: Vec&lt;DefinitionRange&gt;,
-}
-
-impl VanillaListGrammar {
-    pub fn new() -&gt; Self {
-        VanillaListGrammar::default()
-    }
-
-    fn push(&amp;mut self, item: DefinitionRange) {
-        self.numbers.push(item)
-    }
-}
-
-impl Display for VanillaListGrammar {
-    fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
-        writeln!(
-            f,
-            &quot;[{}]&quot;,
-            self.numbers
-                .iter()
-                .map(|e| format!(&quot;{}&quot;, e))
-                .collect::&lt;Vec&lt;String&gt;&gt;()
-                .join(&quot;, &quot;)
-        )
-    }
-}
-
-impl VanillaListGrammarTrait for VanillaListGrammar {}
-<span class="boring">}
-</span></code></pre></pre>
-<p>Now you should be able to run the parser</p>
-<pre><code class="language-shell">$ cargo run ./test.txt
-Finished dev [unoptimized + debuginfo] target(s) in 0.23s
-     Running `target\debug\vanilla_list.exe .\test.txt`
-Parsing took 3 milliseconds.
-Success!
-[]
-</code></pre>
-<p>Also some warnings should occur. But we resolve them soon.</p>
-<p>What we see here is that the parser accepts the input but doesn't collect the list items for us
-immediately (there are no list items in between <code>[</code> and <code>]</code>). The parser functions as an acceptor
-but without any processing.</p>
-<p>We need to do this on our own.</p>
-<p>To be able to 'hook' into the right production we need to examine the expanded grammar more closely
-than we had to in the auto-generation mode.</p>
-<p>So open the generated file <code>vanilla_list-exp-par</code> and look for the production where a <code>Num</code> token
-is accepted:</p>
-<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
-</code></pre>
-<p>Then we need to implement the semantic action for exactly this production number 5. We find the
-trait function to implement in the file <code>src\vanilla_list_grammar_trait.rs</code> and copy it into the
-impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl VanillaListGrammarTrait for VanillaListGrammar {
-    /// Semantic action for production 5:
-    ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
-    ///
-    fn num(&amp;mut self, _num: &amp;ParseTreeStackEntry, _parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
-        Ok(())
-    }
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>Here we can implement our handling:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>    /// Semantic action for production 5:
-    ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
-    ///
-    fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
-        let symbol = num.symbol(parse_tree)?;
-        let number = symbol
-            .parse::&lt;DefinitionRange&gt;()
-            .into_diagnostic()
-            .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
-        self.push(number);
-        Ok(())
-    }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Now run the parser again</p>
-<pre><code class="language-shell">$ cargo run ./test.txt
-    Finished dev [unoptimized + debuginfo] target(s) in 1.54s
-     Running `target\debug\vanilla_list.exe .\test.txt`
-Parsing took 4 milliseconds.
-Success!
-[1, 2, 3, 4, 5, 6]
-</code></pre>
-<p>Yep! This worked fine.</p>
-<p>The remaining warnings can be removed be deleting the following lines in <code>main.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[macro_use]
-extern crate derive_builder;
-#[macro_use]
-extern crate function_name;
-<span class="boring">}
-</span></code></pre></pre>
-<p>Finally you can remove the references to crates <code>derive_builder</code> and <code>function_name</code> from
-<code>cargo.toml</code>.</p>
-<p>Note that you can`t use user defined types for your ATS types in vanilla mode because no AST types
-are generated at all. But actually you opted in to build the AST types on your own when you disable
-auto-generation mode.</p>
 
                     </main>
 
