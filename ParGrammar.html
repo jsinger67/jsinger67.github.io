@@ -145,49 +145,7 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="the-syntax-of-parols-grammar-description"><a class="header" href="#the-syntax-of-parols-grammar-description">The syntax of <code>parol</code>'s Grammar description</a></h1>
-<p>Here I provide the definition of the PAR grammar in EBNF (PAR grammar in PAR is <a href="https://github.com/jsinger67/parol/blob/main/src/parser/parol-grammar.par">here</a>).</p>
-<pre><code class="language-ebnf">(* PAR Grammar defined in EBNF *)
-Parol               = Prolog GrammarDefinition.         (* The start symbol of the PAR grammar *)
-Prolog              = StartDeclaration {Declaration} {ScannerState}.
-StartDeclaration    = '%start' Identifier.
-Declaration         = '%title' String
-                    | '%comment' String
-                    | &quot;%user_type&quot; Identifier '=' UserTypeName  (* User type alias definition *)
-                    | ScannerDirectives.
-ScannerDirectives   = '%line_comment' String
-                    | '%block_comment' String String
-                    | '%auto_newline_off'
-                    | '%auto_ws_off'.
-GrammarDefinition   = '%%' Production {Production}.     (* There must be at least one production - with the start symbol *)
-Production          = Identifier ':' Alternations ';'.
-Alternations        = Alternation {'|' Alternation}.
-Alternation         = {Factor}.
-Factor              = Group
-                    | Repeat
-                    | Optional
-                    | Symbol.
-Symbol              = NonTerminal                       (* EBNF: Meta-identifier *)
-                    | SimpleToken
-                    | TokenWithStates
-                    | ScannerSwitch.                    (* Instruction to switch to new scanner state *)
-SimpleToken         = String [ASTControl].              (* EBNF: Terminal-string, always treated as a regular expression! *)
-TokenWithStates     = &quot;&lt;&quot; StateList &quot;&gt;&quot; String [ASTControl].
-Group               = '(' Alternations ')'.             (* A non-empty grouping *)
-Optional            = '[' Alternations ']'.             (* A non-empty optional expression *)
-Repeat              = '{' Alternations '}'.             (* A non-empty repetition *)
-NonTerminal         = Identifier [ASTControl].
-Identifier          = '[a-zA-Z_]\w*'.
-String              = '\u{0022}([^\\]|\\.)*?\u{0022}'.
-ScannerState        = '%scanner' Identifier '{' {ScannerDirectives} '}'.
-StateList           = Identifier { ',' Identifier }.    (* Scanner states a terminal symbol is associated with *)
-ScannerSwitch       = '%sc' '(' [Identifier] ')'        (* Missing identifier implies INITIAL state *)
-                    | '%push' '(' Identifier ')'        (* Identifier of scanner state is mandatory *)
-                    | '%pop' '(' ')'.                   (* Parentheses are also mandatory *)
-ASTControl          = CutOperator | UserTypeDeclaration.
-CutOperator         = '^'.                              (* Prevents the symbol from being propagated to the AST in auto-gen *)
-UserTypeDeclaration = ':' UserTypeName.                 (* Assigns the user type to a symbol *)
-UserTypeName        = Identifier { '::' Identifier }.   (* A valid Rust qualified name *)
-</code></pre>
+<p>I provide the definition of the PAR grammar in PAR grammar <a href="https://github.com/jsinger67/parol/blob/main/src/parser/parol-grammar.par">itself</a>.</p>
 <p>This grammar is quite concise and most programmers should be familiar with it. But there are several
 specialties which will be described here. First please notice the built-in support for language
 comments.</p>
@@ -240,16 +198,23 @@ say:</p>
 </code></pre>
 <p>With this trick you define a so called &quot;primary non-terminal for a terminal&quot; (I coined it this way)
 that instructs the name generation to name the terminal &quot;Assign&quot;.</p>
-<h3 id="terminal-conflicts"><a class="header" href="#terminal-conflicts">Terminal conflicts</a></h3>
-<p>Since <code>parol</code> creates a scanner on the basis of the Rust regex crate all terminals are treated as if
-they were regular expressions.
-Thus you have to consider the following caveats.</p>
+<h3 id="terminal-representation"><a class="header" href="#terminal-representation">Terminal representation</a></h3>
+<p>As of version 0.14.0 <code>parol</code> supports three different styles of terminal representations.</p>
 <ul>
-<li>If you want to use a character that is a regex meta-character you have to escape it, like the '+'
-in the following example:</li>
+<li>The legacy syntax (<code>&quot;...&quot;</code>). These terminals are treated as if they were regular expressions.</li>
+<li>New single quoted string literals (<code>'..'</code>) are literal or raw strings. The user doesn't need to
+escape any regex meta character. This is used when you don't want to deal with regexes and only use
+plain text. E.g.: <code>BlockBegin: '{'</code></li>
+<li>New regular expression strings (<code>/../</code>), behaves exactly like the old double quoted string but
+better conveys the intent. E.g.: <code>Digits: /[\d]+/</code></li>
 </ul>
-<pre><code class="language-parol">AddOperator: &quot;\+|-&quot;;
+<p>Internally <code>parol</code> creates scanners on the basis of the Rust regex crate and all terminals are
+embedded in a regular expression eventually. You should be aware of this if you get strange errors
+from regex generation and want to understand the problem.</p>
+<p>Here is an example for a terminal in regular expression form:</p>
+<pre><code class="language-parol">AddOperator: /+|-/;
 </code></pre>
+<h3 id="terminal-conflicts"><a class="header" href="#terminal-conflicts">Terminal conflicts</a></h3>
 <ul>
 <li>In case of conflicts between different terminals <em>the first seen will win</em></li>
 </ul>
@@ -257,7 +222,7 @@ in the following example:</li>
 It's best to show an example for such a situation.
 Say you have two terminals &quot;-&quot; and &quot;--&quot;, <em>minus</em> and <em>decrement</em>. The generated scanner is then
 based on the following regular expression:</p>
-<pre><code class="language-parol">    &quot;-|--&quot;
+<pre><code class="language-parol">    /-|--/
 </code></pre>
 <p>The Rust regex will now match two times <em>minus</em> when actually a <em>decrement</em> operator should be
 detected.
@@ -265,15 +230,15 @@ It behaves here differently than a classic scanner/lexer like Lex that obeys the
 strategy.</p>
 <p>Fortunately there is a simple way to achieve what we want. We just need a resulting regular
 expression with a different order:</p>
-<pre><code class="language-parol">    &quot;--|-&quot;
+<pre><code class="language-parol">    /--|-/
 </code></pre>
 <p>This will perfectly do the job.</p>
 <p>To get such an order the <em>decrement</em> terminal has to be defined <strong>before</strong> the <em>minus</em> terminal as
 in the following snippet.</p>
-<pre><code class="language-parol">decrement: &quot;--&quot;
+<pre><code class="language-parol">decrement: /--/
 ;
 ...
-minus: &quot;-&quot;
+minus: /-/
 ;
 </code></pre>
 <p>Thats all.</p>
@@ -281,7 +246,7 @@ minus: &quot;-&quot;
 <h3 id="terminals-that-matches-an-empty-string"><a class="header" href="#terminals-that-matches-an-empty-string">Terminals that matches an empty string</a></h3>
 <p>Please note that terminals should always match non-empty text portions. This means that you have to
 avoid terminals like this:</p>
-<pre><code class="language-parol">&quot;a?&quot;, &quot;a*&quot;, &quot;\b&quot;
+<pre><code class="language-parol">/a?/, /a*/, /\b/
 </code></pre>
 <p>Internally the tokenizer will enter a loop and match the empty string over and over again without
 making progress in the input. Currently there is no check for this scenario in <code>parol_runtime</code>.</p>
@@ -320,7 +285,7 @@ name of the state which is used to refer to it from scanner state lists at termi
 <p>Associate terminals with scanner states by prefixing them with a list of comma separated state names
 in angle brackets. Like this:</p>
 <pre><code class="language-parol">StringDelimiter
-    : &lt;String, INITIAL&gt;&quot;\u{22}&quot;
+    : &lt;String, INITIAL&gt;/&quot;/
     ;
 </code></pre>
 <p>Scanner state references in different occurrences of the same terminal are accumulated. I.e.,</p>
@@ -360,7 +325,7 @@ an appropriate grammar formulation.</p>
 <h2 id="omitting-grammar-symbol-from-the-ast-in-auto-gen-modus"><a class="header" href="#omitting-grammar-symbol-from-the-ast-in-auto-gen-modus">Omitting grammar symbol from the AST in auto-gen modus</a></h2>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST in auto-gen modus.</p>
-<pre><code class="language-parol">Group: &quot;\(&quot;^ Alternations &quot;\)&quot;^;
+<pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
 <p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
 <code>Alternations</code>. The parentheses are ignored.</p>
