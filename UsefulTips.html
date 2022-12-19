@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Operator precedence - The Parol Parser Generator</title>
+        <title>Useful hints - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html" class="active"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">10.</strong> Useful hints</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="UsefulTips.html" class="active"><strong aria-hidden="true">10.</strong> Useful hints</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -144,93 +144,30 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="operator-precedence"><a class="header" href="#operator-precedence">Operator precedence</a></h1>
-<p>Operator precedence is realized by means of grammar definition.
-In other words you put higher prioritized elements into sub-categories. Using this approach you
-force the parser to branch into those first which leads to earlier evaluation in the end.</p>
-<p>Please have a look at this example:</p>
-<pre><code class="language-parol">%start Precedence
-%title &quot;Operator precedence&quot;
-%comment &quot;Shows the handling of operator precedence in `parol`&quot;
+                        <h1 id="useful-tips"><a class="header" href="#useful-tips">Useful tips</a></h1>
+<h2 id="build-performance"><a class="header" href="#build-performance">Build performance</a></h2>
+<p>To get an optimized build performance when using <code>parol</code>'s
+<a href="https://github.com/jsinger67/parol/blob/main/crates/parol/src/build.rs">Builder</a> API in your
+<code>build.rs</code> script you can insert the following overrides into your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-toml"># Optimized build performance
+[profile.dev.build-override]
+opt-level = 3
 
-%%
-
-// ---------------------------------------------------------
-// VARIABLE
-Variable: &quot;(?i)[A-Z][0-9A-Z]*&quot;
-        ;
-Literal : &quot;(?:[0-9] *)+&quot;
-        ;
-
-// ---------------------------------------------------------
-// OPERATOR SYMBOLS
-Plus    : &quot;\+&quot;
-        ;
-Minus   : &quot;-&quot;
-        ;
-MulOp   : &quot;\*|/&quot;
-        ;
-
-// ---------------------------------------------------------
-// PARENTHESIS
-LParen  : &quot;\(&quot;
-        ;
-RParen  : &quot;\)&quot;
-        ;
-
-// ---------------------------------------------------------
-// EXPRESSIONS
-Precedence
-        : Summation
-        ;
-Summation
-        : Multiplication { (Plus | Minus) Multiplication }
-        ;
-Multiplication
-        : Factor { MulOp Factor }
-        ;
-Factor  : Literal
-        | Variable
-        | Minus Factor
-        | LParen Precedence RParen
-        ;
+[profile.release.build-override]
+opt-level = 3
 </code></pre>
-<p>Parsing the string <code>-1 + x * 5</code> with the generated parser will create the following parse tree:</p>
-<p><img src="./precedence/test.svg" alt="Parse Tree" /></p>
-<blockquote>
-<p>Hint: If the picture is too small please open it in a separate tab via context menu.</p>
-</blockquote>
-<p>Here you can see that the &quot;inner most&quot; operator is evaluated first by the parser, here the negation
-in production <code>Factor</code>.</p>
-<p>The <code>Multiplication</code> is the  second highest priority in our example. It is a sub-category of the
-<code>Summation</code>.</p>
-<p>You can try this grammar by calling</p>
-<pre><code class="language-shell">parol new --bin --path .\precedence --tree
-</code></pre>
-<p>Open the generated crate and substitute the generated dummy grammar by the one above.
-Also change the test.txt to the content</p>
-<pre><code class="language-text">-1 + x * 5
-</code></pre>
-<p>Now you can parse this text by calling</p>
-<pre><code class="language-shell">cargo run ./test.txt
-</code></pre>
-<p>from the generated crate's root folder.</p>
-<p>Since we added the <code>--tree</code> flag at the <code>parol new</code> command parol generates parse trees for us.
-Search for a <code>test.svg</code> file beside the <code>text.txt</code> file.</p>
-<p>I advice to use the parse tree generation feature when developing your grammar and to remove it
-again when putting your parser into production mode.</p>
+<h3 id="credits"><a class="header" href="#credits">Credits</a></h3>
+<p>Thanks to <a href="https://github.com/dalance">dalance</a> for reporting
+<a href="https://github.com/jsinger67/parol/issues/49">#49 (build.rs performance)</a></p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="ParGrammar.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="SemanticActions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="OperatorAssociativity.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -238,13 +175,10 @@ again when putting your parser into production mode.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="ParGrammar.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="SemanticActions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="OperatorAssociativity.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>

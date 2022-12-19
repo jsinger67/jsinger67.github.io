@@ -84,7 +84,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">10.</strong> Useful hints</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -1507,6 +1507,21 @@ that belongs to the grammar defined by
 I recommend to study this example more deeply and the approach will become obvious to you.</p>
 <p>As mentioned earlier the implementation can be found here:
 <a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="useful-tips"><a class="header" href="#useful-tips">Useful tips</a></h1>
+<h2 id="build-performance"><a class="header" href="#build-performance">Build performance</a></h2>
+<p>To get an optimized build performance when using <code>parol</code>'s
+<a href="https://github.com/jsinger67/parol/blob/main/crates/parol/src/build.rs">Builder</a> API in your
+<code>build.rs</code> script you can insert the following overrides into your <code>Cargo.toml</code> file:</p>
+<pre><code class="language-toml"># Optimized build performance
+[profile.dev.build-override]
+opt-level = 3
+
+[profile.release.build-override]
+opt-level = 3
+</code></pre>
+<h3 id="credits"><a class="header" href="#credits">Credits</a></h3>
+<p>Thanks to <a href="https://github.com/dalance">dalance</a> for reporting
+<a href="https://github.com/jsinger67/parol/issues/49">#49 (build.rs performance)</a></p>
 
                     </main>
 
