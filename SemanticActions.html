@@ -8,7 +8,6 @@
 
         <!-- Custom HTML head -->
         
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -32,17 +31,18 @@
         <!-- Custom theme stylesheets -->
 
         <!-- MathJax -->
-        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -58,7 +58,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -70,12 +70,14 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var sidebar = null;
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -101,7 +103,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -134,7 +136,7 @@
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -155,8 +157,7 @@ scheme:</p>
 </span>pub trait &lt;NameOfYourGrammar&gt;GrammarTrait&lt;'t&gt; {
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The lifetime parameter &lt;'t&gt; can be left out if the types used don't hold references to the scanned
 text. This is automatically deduced.</p>
 <p>Eventually your grammar processing item implements this trait and can overwrite those functions of
@@ -188,15 +189,13 @@ from the previous chapter.</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, _num: &amp;ParseTreeStackEntry, _parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
+    fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
     }
 
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This is only the semantic action for production 5:</p>
 <pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
 </code></pre>
@@ -204,8 +203,7 @@ from the previous chapter.</p>
 nothing but returning <code>Ok</code>.</p>
 <p>The second property of a all these functions is that the first argument always is a mutable
 reference to the implementing item, in this case a reference to <code>VanillaListGrammar</code>.</p>
-<p>The rest of the arguments correspond to the right-hand side of the respective production, except the
-last one which is needed to access the parse tree.</p>
+<p>The rest of the arguments correspond to the right-hand side of the respective production.</p>
 <p>Next you see a concrete implementation of a semantic action, where all arguments of the semantic
 action are used. This is not always necessary the case and depends on your own language
 implementation.</p>
@@ -216,69 +214,73 @@ implementation.</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
-        let text = num.text(parse_tree)?;
-        let number = text
+    fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
+        let symbol = num.text()?;
+        let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .into_diagnostic()
-            .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
+            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
         self.push(number);
         Ok(())
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>You can see that the parameter of the semantic actions which correspond to the right-hand side of
-the respective productions are all of type <code>&amp;ParseTreeStackEntry</code>. This type from the
-<a href="https://crates.io/crates/parol_runtime">parol_runtime</a> crate is defined this way:</p>
+the respective productions are all of type <code>&amp;ParseTreeType</code>. This type from the
+<a href="https://github.com/jsinger67/parol/blob/main/crates/parol_runtime/src/parser/parse_tree_type.rs">parol_runtime</a>
+crate is defined this way:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
-/// The type of elements in the parser's parse tree stack.
-/// * 'Nd' references nodes not yet inserted into the parse tree.
-/// * 'Id' holds node ids to nodes that are already part of the parse tree.
+/// The type of the elements in the parse tree.
 ///
-#[derive(Debug)]
-pub enum ParseTreeStackEntry&lt;'t&gt; {
-    /// The node is not inserted into the parse tree yet.
-    /// Thus we can access it directly.
-    Nd(Node&lt;ParseTreeType&lt;'t&gt;&gt;),
+/// The lifetime parameter `'t` refers to the lifetime of the scanned text.
+///
+#[derive(Debug, Clone)]
+pub enum ParseTreeType&lt;'t&gt; {
+    ///
+    /// A scanned token.
+    ///
+    T(Token&lt;'t&gt;),
 
-    /// The node is already inserted into the parse tree.
-    /// Wee need to lookup the node in the parse tree via the NodeId.
-    Id(NodeId),
+    ///
+    /// A non-terminal name.
+    /// All names are of static lifetime (see NON_TERMINALS slice of non-terminal names).
+    ///
+    N(&amp;'static str),
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Actually it is a wrapper type that provides access to a specific tree node type. It implements three
-functions that you can directly call in your semantic actions:</p>
+<span class="boring">}</span></code></pre></pre>
+<p>It implements two functions that you can directly call in your semantic actions:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl&lt;'t&gt; ParseTreeStackEntry&lt;'t&gt; {
-    /// Returns the inner ParseTreeType.
-    pub fn get_parse_tree_type&lt;'a, 'b&gt;(&amp;'a self,
-      parse_tree: &amp;'b Tree&lt;ParseTreeType&lt;'t&gt;&gt;)
-      -&gt; &amp;'a ParseTreeType;
-
-    /// Tries to access the Token of the ParseTreeStackEntry.
+</span>impl&lt;'t&gt; ParseTreeType&lt;'t&gt; {
+    ///
+    /// Tries to access the Token of the ParseTreeType.
     /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    pub fn token&lt;'a, 'b&gt;(&amp;'a self, parse_tree: &amp;'b Tree&lt;ParseTreeType&lt;'t&gt;&gt;)
-      -&gt; Result&lt;&amp;'a Token&lt;'t&gt;&gt;;
+    ///
+    pub fn token(&amp;self) -&gt; Result&lt;&amp;Token&lt;'t&gt;, ParserError&gt; {
+        match self {
+            Self::T(t) =&gt; Ok(t),
+            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+        }
+    }
 
-    /// Tries to access the text of the ParseTreeStackEntry.
+    ///
+    /// Tries to access the scanned text of the ParseTreeType.
     /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    pub fn symbol&lt;'a, 'b&gt;(&amp;'a self, parse_tree: &amp;'b Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;&amp;'a str&gt;;
+    ///
+    pub fn text(&amp;self) -&gt; Result&lt;&amp;str, ParserError&gt; {
+        match self {
+            Self::T(t) =&gt; Ok(t.text()),
+            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+        }
+    }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>In your semantic action you exactly know which argument correspond to a terminal or a non-terminal
-symbol. If you want to access the token that contains a concrete terminal you can use the last two
-functions. If you want to access a non-terminal you can use the first function. But this is normally
-not necessary because the non-terminals are simply nodes with the non-terminal's name that
-represents certain subtrees in the concrete parse-tree. So it is worth to consider the following
-hints.</p>
+symbol. If you want to access the token that contains a concrete terminal you can use one of these
+functions. Non-terminals are of lesser interest because non-terminals are simply nodes with the
+non-terminal's name that represents certain subtrees in the concrete parse-tree. So it is worth to
+consider the following hints.</p>
 <p>A good way to process your grammar is to implement an own typed parse stack in your grammar
 processing item. Then you construct such stack items from the tokens you encounter in your semantic
 actions and push them on your parse stack. They then are something like the <em>results</em> of your
@@ -296,9 +298,8 @@ your grammar. As in <a href="SemanticActions.html#semantic-actions-in-vanilla-mo
 <code>parol</code> parser generator creates a trait with functions that represent semantic actions. But here
 the semantic actions are typed and they are generated for the <em>non-terminals of your input grammar</em>
 instead of for <em>productions of the <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a></em>.</p>
-<p>You therefore don't have to mess around with <code>ParseTreeStackEntry</code> and <code>ParseTreeType</code> although you
-still encounter items of type <code>Token</code>. Also the expanded version of your grammar is much less of
-interest for you.</p>
+<p>You therefore don't have to mess around with <code>ParseTreeType</code> although you still encounter items of
+type <code>Token</code>. Also the expanded version of your grammar is much less of interest for you.</p>
 <p><code>parol</code>'s great merit is that it can generate an adapter layer automatically that provides the
 conversion to typed grammar items. Indeed I carved out some simple rules that can be applied
 universally to provide this layer of abstraction by generating the production bound semantic
@@ -325,8 +326,7 @@ pub trait CalcGrammarTrait&lt;'t&gt; {
     }
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The approach taken in this example is quite interesting. We only implement the semantic action for
 the start symbol of our grammar: <em>calc</em>.</p>
 <p>The implementation can be found in
@@ -336,17 +336,13 @@ the functionality of a calculator language.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; CalcGrammarTrait&lt;'t&gt; for CalcGrammar&lt;'t&gt; {
-    /// Semantic action for user production 0:
-    ///
-    /// calc: {instruction &lt;0&gt;&quot;;&quot;};
-    ///
+    /// Semantic action for non-terminal 'Calc'
     fn calc(&amp;mut self, arg: &amp;Calc&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         self.process_calc(arg)?;
         Ok(())
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>But what is the advantage of implementing only the start symbols's semantic action? Well, since the
 start symbol is the root node of each and every concrete parse tree we know, that the generated type
 for it should comprise the complete input as the result of the parsing.</p>
@@ -359,13 +355,10 @@ productions belonging to the non-terminal `calc'. There is actually only one pro
 </span>///
 /// Type derived for non-terminal calc
 ///
-#[allow(dead_code)]
-#[derive(Builder, Debug, Clone)]
 pub struct Calc&lt;'t&gt; {
     pub calc_list: Vec&lt;CalcList&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
 right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).</p>
 <p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
@@ -378,27 +371,21 @@ right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).
 </span>///
 /// Type derived for non-terminal calcList
 ///
-#[allow(dead_code)]
-#[derive(Builder, Debug, Clone)]
 pub struct CalcList&lt;'t&gt; {
     pub instruction: Box&lt;Instruction&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>And in turn the type <code>Instruction</code> looks like this:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
 /// Type derived for non-terminal instruction
 ///
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
 pub enum Instruction&lt;'t&gt; {
-    Instruction0(Instruction0&lt;'t&gt;),
-    Instruction1(Instruction1&lt;'t&gt;),
+    Assignment(InstructionAssignment&lt;'t&gt;),
+    LogicalOr(InstructionLogicalOr&lt;'t&gt;),
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The latter one is an enum with two variants because the non-terminal <code>instruction</code> has two
 productions:</p>
 <pre><code class="language-parol">// ---------------------------------------------------------
@@ -448,21 +435,22 @@ I recommend to study this example more deeply and the approach will become obvio
 
 
 
-        <script type="text/javascript">
+        <script>
             window.playground_copyable = true;
         </script>
 
 
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
 
 
+    </div>
     </body>
 </html>

@@ -8,7 +8,6 @@
 
         <!-- Custom HTML head -->
         
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -32,17 +31,18 @@
         <!-- Custom theme stylesheets -->
 
         <!-- MathJax -->
-        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -58,7 +58,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -70,12 +70,14 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var sidebar = null;
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -101,7 +103,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -134,7 +136,7 @@
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -200,8 +202,7 @@ able to infer it into a Rust <code>Option&lt;T&gt;</code> eventually.</p>
 </span>struct A {
     b: Option&lt;B&gt;
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>We must use a <code>struct</code> here because this patterns should work for productions with \(n\)
 elements on its right-hand side. For each such element we then introduce a separate member into the
 struct.</p>
@@ -221,8 +222,7 @@ enum A {
     A0(B),
     A1(C),
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>When finally all types for all non-terminals are inferred <code>parol</code> generates an overall AST type.
 This is also a Rust <code>enum</code>. It comprises all non-terminal types of the grammar and provides exactly
 one enum variant for each of them. This type is mainly used by the parser itself to be able to
@@ -237,14 +237,13 @@ elements to <code>struct</code>s, e.g.:</p>
 </span>struct A {
     b: Box&lt;B&gt;
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This results in finite type sizes.</p>
 <h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST type, e.g.:</p>
-<pre><code class="language-parol">Group: &quot;\(&quot;^ Alternations &quot;\)&quot;^;
+<pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
 <p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
 <code>Alternations</code>. The parentheses are suppressed because they have no special purpose for the grammar
@@ -289,28 +288,20 @@ expanded grammar <code>list-exp.par</code> which can be found in also generated 
     ///
     /// ListOpt /* Option&lt;T&gt;::Some */: Items : Numbers;
     ///
-    #[named]
-    fn list_opt_0(
-        &amp;mut self,
-        _items: &amp;ParseTreeStackEntry&lt;'t&gt;,
-        _parse_tree: &amp;Tree&lt;ParseTreeType&lt;'t&gt;&gt;,
-    ) -&gt; Result&lt;()&gt; {
+    #[parol_runtime::function_name::named]
+    fn list_opt_0(&amp;mut self, _items: &amp;ParseTreeType&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         let context = function_name!();
         trace!(&quot;{}&quot;, self.trace_item_stack(context));
-        let items = if let Some(ASTType::Items(items)) = self.pop(context) {
-            items
-        } else {
-            bail!(&quot;{}: Expecting ASTType::Items&quot;, context);
+        let items = pop_item!(self, items, Items, context);
+        let list_opt_0_built = ListOpt {
+            items: (&amp;items)
+                .try_into()
+                .map_err(parol_runtime::ParolError::UserError)?,
         };
-        let list_opt_0_built = ListOptBuilder::default()
-            .items((&amp;items).try_into().into_diagnostic()?)
-            .build()
-            .into_diagnostic()?;
         self.push(ASTType::ListOpt(Some(Box::new(list_opt_0_built))), context);
         Ok(())
     }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>At the line after the trace the original item is popped from the parse stack. It has the Rust type
 <code>Items</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -320,18 +311,17 @@ pub struct Items {
     pub num: Box&lt;Num&gt;,
     pub items_list: Vec&lt;ItemsList&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Then later at the construction of the <code>ListOpt</code> structure with the help of the <code>ListOptBuilder</code> the
-conversion to the user's type is called: <code>.items((&amp;items).try_into().into_diagnostic()?)</code>.</p>
+<span class="boring">}</span></code></pre></pre>
+<p>Then later at the construction of the <code>ListOpt</code> structure the conversion to the user's type is
+called: <code>.items((&amp;items).try_into()</code>.</p>
 <p>The <code>TryFrom</code> trait is provided by the user. Please see <code>examples\list_auto\list_grammar.rs</code> for
 that:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl TryFrom&lt;&amp;Items&gt; for Numbers {
-    type Error = &lt;u32 as FromStr&gt;::Err;
+    type Error = anyhow::Error;
 
-    fn try_from(items: &amp;Items) -&gt; Result&lt;Self, Self::Error&gt; {
+    fn try_from(items: &amp;Items) -&gt; std::result::Result&lt;Self, Self::Error&gt; {
         Ok(Self(items.items_list.iter().fold(
             vec![items.num.num.0],
             |mut acc, e| {
@@ -341,30 +331,28 @@ that:</p>
         )))
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This is an example how non-terminal types are converted into user types.</p>
 <p>The easier variant is the conversion of a terminal type (i.e. a <code>Token</code>) into a user type. You can
 find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; TryFrom&lt;&amp;Token&lt;'t&gt;&gt; for Number {
-    type Error = &lt;u32 as FromStr&gt;::Err;
+    type Error = anyhow::Error;
 
-    fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; Result&lt;Self, Self::Error&gt; {
+    fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; std::result::Result&lt;Self, Self::Error&gt; {
         Ok(Self(number.text().parse::&lt;u32&gt;()?))
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Here the scanned text of the token is accessed using the property <code>symbol</code> of the <code>Token</code> type that
-was imported from the <code>parol_runtime</code>crate. This text is then parsed into a <code>u32</code> type and finally
+<span class="boring">}</span></code></pre></pre>
+<p>Here the scanned text of the token is accessed using the method <code>text</code> of the <code>Token</code> type that was
+imported from the <code>parol_runtime</code>crate. This text is then parsed into an <code>u32</code> type and finally
 wrapped into a <code>Number</code>type which is a <em>newtype</em> for <code>u32</code>.</p>
 <p>By implementing some <code>From</code> or <code>TryFrom</code> traits for your user type you can integrate them easily
 into the parse process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
-<a href="https://github.com/jsinger67/parol_basic_interpreter.git">basic interpreter example</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
 
                     </main>
 
@@ -398,21 +386,22 @@ to have a look at my rudimentary
 
 
 
-        <script type="text/javascript">
+        <script>
             window.playground_copyable = true;
         </script>
 
 
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
 
 
+    </div>
     </body>
 </html>

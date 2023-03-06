@@ -9,7 +9,6 @@
 
         <!-- Custom HTML head -->
         
-        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#ffffff" />
@@ -33,17 +32,18 @@
         <!-- Custom theme stylesheets -->
 
         <!-- MathJax -->
-        <script async type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     </head>
     <body>
+    <div id="body-container">
         <!-- Provide site root to javascript -->
-        <script type="text/javascript">
+        <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
 
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
-        <script type="text/javascript">
+        <script>
             try {
                 var theme = localStorage.getItem('mdbook-theme');
                 var sidebar = localStorage.getItem('mdbook-sidebar');
@@ -59,7 +59,7 @@
         </script>
 
         <!-- Set the theme before any content is loaded, prevents flash -->
-        <script type="text/javascript">
+        <script>
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
@@ -71,12 +71,14 @@
         </script>
 
         <!-- Hide / unhide sidebar before it is displayed -->
-        <script type="text/javascript">
+        <script>
             var html = document.querySelector('html');
-            var sidebar = 'hidden';
+            var sidebar = null;
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
             }
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
@@ -102,7 +104,7 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
-                            <li role="none"><button role="menuitem" class="theme" id="light">Light (default)</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
@@ -135,7 +137,7 @@
                 </div>
 
                 <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
-                <script type="text/javascript">
+                <script>
                     document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
                     document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
                     Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
@@ -175,8 +177,8 @@ document.</p>
 <p>The parser calls the interface trait's functions via a separately generated adapter automatically
 during the process of parsing.</p>
 <p><code>parol</code> now provides a whole ecosystem of tools including an
-<a href="https://github.com/jsinger67/parol-vscode">Extension</a> for Visual Studio Code and a
-<a href="https://github.com/jsinger67/parol-ls">Language Server</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">Extension</a> for Visual Studio Code
+and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="history-of-this-project"><a class="header" href="#history-of-this-project">History of this project</a></h1>
 <p>The <code>parol</code> Parser Generator started as a personal journey to master LL(k) parsing with the concise
 means of deterministic finite automata.</p>
@@ -239,8 +241,8 @@ prototyping</strong> for your language!</li>
 <li>Scanner states, aka
 <a href="https://www.cs.princeton.edu/~appel/modern/c/software/flex/flex_toc.html#TOC11">Start conditions</a></li>
 <li>Build script integration to invoke <code>parol</code> automatically during the build of your own crate</li>
-<li>An <a href="https://github.com/jsinger67/parol-vscode">extension</a> for Visual Studio Code and a
-<a href="https://github.com/jsinger67/parol-ls">Language Server</a></li>
+<li>An <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">extension</a> for Visual Studio
+Code and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a></li>
 <li>And all those features Lelek never received</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h1>
@@ -286,11 +288,11 @@ automatically if the grammar description file <code>my_grammar.par</code> has be
 <p><strong>This is all you need to set up a working development environment.</strong></p>
 <blockquote>
 <h2 id="vs-code-extension-and-language-server"><a class="header" href="#vs-code-extension-and-language-server">VS Code extension and Language Server</a></h2>
-<p>I provide a VS Code extension <a href="https://github.com/jsinger67/parol-vscode.git">parol-vscode</a>.</p>
+<p>I provide a VS Code extension <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">parol-vscode</a>.</p>
 <p>Please install this extension from VS Code
 <a href="https://marketplace.visualstudio.com/items?itemName=jsinger67.parol-vscode">marketplace</a>.
 It provides syntax highlighting, folding and language icons and will surely be useful for you.</p>
-<p>The extension utilizes a <a href="https://github.com/jsinger67/parol-ls">Language Server</a> that you have
+<p>The extension utilizes a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a> that you have
 to install separately.</p>
 <pre><code class="language-shell">cargo install parol-ls
 </code></pre>
@@ -507,29 +509,29 @@ force the parser to branch into those first which leads to earlier evaluation in
 
 // ---------------------------------------------------------
 // VARIABLE
-Variable: &quot;(?i)[A-Z][0-9A-Z]*&quot;
+Variable: /(?i)[A-Z][0-9A-Z]*/
         ;
-Literal : &quot;(?:[0-9] *)+&quot;
+Literal : /[0-9]+/
         ;
 
 // ---------------------------------------------------------
 // OPERATOR SYMBOLS
-Plus    : &quot;\+&quot;
+Plus    : '+'
         ;
-Minus   : &quot;-&quot;
+Minus   : '-'
         ;
 MulOp   : &quot;\*|/&quot;
         ;
 
 // ---------------------------------------------------------
 // PARENTHESIS
-LParen  : &quot;\(&quot;
+LParen  : '('
         ;
-RParen  : &quot;\)&quot;
+RParen  : ')'
         ;
 
 // ---------------------------------------------------------
-// EXPRESSIONS
+// EXPRESSIONS in order of increasing precedence
 Precedence
         : Summation
         ;
@@ -582,12 +584,12 @@ associative, i.e. <code>x * y * z</code> is evaluated as <code>(x * y) * z</code
 
 %%
 
-Literal : &quot;(?:[0-9] *)+&quot;
+Literal : /[0-9]+/
         ;
 
 // ---------------------------------------------------------
 // OPERATOR SYMBOLS
-MulOp   : &quot;\*&quot;
+MulOp   : '*'
         ;
 
 // ---------------------------------------------------------
@@ -599,7 +601,6 @@ LeftAssociativity
 Multiplication
         : Literal { MulOp Literal }
         ;
-
 </code></pre>
 <p>You can try this grammar by calling</p>
 <pre><code class="language-shell">parol new --bin --path .\left_associativity --tree
@@ -636,8 +637,7 @@ pub struct MultiplicationList&lt;'t&gt; {
     pub mul_op: Box&lt;MulOp&lt;'t&gt;&gt;,
     pub literal: Box&lt;Literal&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This means that items of a repetition (<code>{...}</code>) are stored in a vector and can be processed later in
 the desired direction. I defined this behavior for all repetitions of grammar items.</p>
 <p>With this explained you can figure out that it is up to your grammar processing to chose the right
@@ -650,11 +650,10 @@ direction of evaluation.</p>
 </span>use crate::left_associativity_grammar_trait::{
     LeftAssociativity, LeftAssociativityGrammarTrait, Literal,
 };
-use miette::Result;
-use miette::{bail, IntoDiagnostic};
+use parol_runtime::parol_macros::{bail, parol};
+use parol_runtime::Result;
 use std::fmt::{Debug, Display, Error, Formatter};
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Add a result member to the struct <code>LeftAssociativityGrammar</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -662,13 +661,16 @@ use std::fmt::{Debug, Display, Error, Formatter};
     pub left_associativity: Option&lt;LeftAssociativity&lt;'t&gt;&gt;,
     pub result: u32,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Add the following two functions to the impl block of the struct <code>LeftAssociativityGrammar</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>    fn number(literal: &amp;Literal) -&gt; Result&lt;u32&gt; {
-        literal.literal.text().parse::&lt;u32&gt;().into_diagnostic()
+        literal
+            .literal
+            .text()
+            .parse::&lt;u32&gt;()
+            .map_err(|e| parol!(&quot;'{}': {e}&quot;, literal.literal.text()))
     }
 
     fn process_operation(&amp;mut self) -&gt; Result&lt;()&gt; {
@@ -676,7 +678,7 @@ use std::fmt::{Debug, Display, Error, Formatter};
             let init = Self::number(&amp;grammar.multiplication.literal)?;
             self.result = grammar.multiplication.multiplication_list.iter().fold(
                 Ok(init),
-                |acc: Result&lt;u32, miette::ErrReport&gt;, mul| {
+                |acc: Result&lt;u32&gt;, mul| {
                     if let Ok(mut acc) = acc {
                         acc *= Self::number(&amp;mul.literal)?;
                         Ok(acc)
@@ -690,8 +692,7 @@ use std::fmt::{Debug, Display, Error, Formatter};
             bail!(&quot;No valid parse result!&quot;)
         }
     }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Change the Display implementation in this way:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -703,20 +704,17 @@ use std::fmt::{Debug, Display, Error, Formatter};
         }
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>And finally change the last line of the function <code>left_associativity</code> at the end of the file from</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>        Ok(())
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>to</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>        self.process_operation()
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>And now run the parser again:</p>
 <pre><code class="language-shell">$ cargo run ./test.txt
    Compiling left_associativity v0.1.0 (C:\Users\joerg\Source\temp\left_associativity)
@@ -738,8 +736,7 @@ pub struct Multiplication&lt;'t&gt; {
     pub literal: Box&lt;Literal&lt;'t&gt;&gt;,
     pub multiplication_list: Vec&lt;MultiplicationList&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The struct <code>Multiplication</code> is constructed this way because of the structure of our grammar:</p>
 <pre><code class="language-parol">Multiplication
         : Literal { MulOp Literal }
@@ -756,12 +753,12 @@ mathematical notation: \( {x^{y}}^{z} \)</p>
 
 %%
 
-Literal : &quot;[0-9]+&quot;
+Literal : /[0-9]+/
         ;
 
 // ---------------------------------------------------------
 // OPERATOR SYMBOLS
-PowOp   : &quot;\^&quot;
+PowOp   : '^'
         ;
 
 // ---------------------------------------------------------
@@ -803,7 +800,7 @@ made in our upper example. Thereby modify prefixes <code>Left</code> and <code>l
         if let Some(grammar) = &amp;self.right_associativity {
             self.result = grammar.potentiation.potentiation_list.iter().rev().fold(
                 Ok(1),
-                |acc: Result&lt;u32, miette::ErrReport&gt;, mul| {
+                |acc: Result&lt;u32&gt;, mul| {
                     if let Ok(mut acc) = acc {
                         acc =  Self::number(&amp;mul.literal)?.pow(acc);
                         Ok(acc)
@@ -819,8 +816,7 @@ made in our upper example. Thereby modify prefixes <code>Left</code> and <code>l
             bail!(&quot;No valid parse result!&quot;)
         }
     }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Basically we also fold over the list of operation parts. But this time in reverse order (see
 <code>.rev()</code> in the initialization of the iteration).
 The start operand is this time the number <code>1</code> and the last operand is the single literal in the
@@ -891,8 +887,7 @@ able to infer it into a Rust <code>Option&lt;T&gt;</code> eventually.</p>
 </span>struct A {
     b: Option&lt;B&gt;
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>We must use a <code>struct</code> here because this patterns should work for productions with \(n\)
 elements on its right-hand side. For each such element we then introduce a separate member into the
 struct.</p>
@@ -912,8 +907,7 @@ enum A {
     A0(B),
     A1(C),
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>When finally all types for all non-terminals are inferred <code>parol</code> generates an overall AST type.
 This is also a Rust <code>enum</code>. It comprises all non-terminal types of the grammar and provides exactly
 one enum variant for each of them. This type is mainly used by the parser itself to be able to
@@ -928,14 +922,13 @@ elements to <code>struct</code>s, e.g.:</p>
 </span>struct A {
     b: Box&lt;B&gt;
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This results in finite type sizes.</p>
 <h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST type, e.g.:</p>
-<pre><code class="language-parol">Group: &quot;\(&quot;^ Alternations &quot;\)&quot;^;
+<pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
 <p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
 <code>Alternations</code>. The parentheses are suppressed because they have no special purpose for the grammar
@@ -980,28 +973,20 @@ expanded grammar <code>list-exp.par</code> which can be found in also generated 
     ///
     /// ListOpt /* Option&lt;T&gt;::Some */: Items : Numbers;
     ///
-    #[named]
-    fn list_opt_0(
-        &amp;mut self,
-        _items: &amp;ParseTreeStackEntry&lt;'t&gt;,
-        _parse_tree: &amp;Tree&lt;ParseTreeType&lt;'t&gt;&gt;,
-    ) -&gt; Result&lt;()&gt; {
+    #[parol_runtime::function_name::named]
+    fn list_opt_0(&amp;mut self, _items: &amp;ParseTreeType&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         let context = function_name!();
         trace!(&quot;{}&quot;, self.trace_item_stack(context));
-        let items = if let Some(ASTType::Items(items)) = self.pop(context) {
-            items
-        } else {
-            bail!(&quot;{}: Expecting ASTType::Items&quot;, context);
+        let items = pop_item!(self, items, Items, context);
+        let list_opt_0_built = ListOpt {
+            items: (&amp;items)
+                .try_into()
+                .map_err(parol_runtime::ParolError::UserError)?,
         };
-        let list_opt_0_built = ListOptBuilder::default()
-            .items((&amp;items).try_into().into_diagnostic()?)
-            .build()
-            .into_diagnostic()?;
         self.push(ASTType::ListOpt(Some(Box::new(list_opt_0_built))), context);
         Ok(())
     }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>At the line after the trace the original item is popped from the parse stack. It has the Rust type
 <code>Items</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -1011,18 +996,17 @@ pub struct Items {
     pub num: Box&lt;Num&gt;,
     pub items_list: Vec&lt;ItemsList&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Then later at the construction of the <code>ListOpt</code> structure with the help of the <code>ListOptBuilder</code> the
-conversion to the user's type is called: <code>.items((&amp;items).try_into().into_diagnostic()?)</code>.</p>
+<span class="boring">}</span></code></pre></pre>
+<p>Then later at the construction of the <code>ListOpt</code> structure the conversion to the user's type is
+called: <code>.items((&amp;items).try_into()</code>.</p>
 <p>The <code>TryFrom</code> trait is provided by the user. Please see <code>examples\list_auto\list_grammar.rs</code> for
 that:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl TryFrom&lt;&amp;Items&gt; for Numbers {
-    type Error = &lt;u32 as FromStr&gt;::Err;
+    type Error = anyhow::Error;
 
-    fn try_from(items: &amp;Items) -&gt; Result&lt;Self, Self::Error&gt; {
+    fn try_from(items: &amp;Items) -&gt; std::result::Result&lt;Self, Self::Error&gt; {
         Ok(Self(items.items_list.iter().fold(
             vec![items.num.num.0],
             |mut acc, e| {
@@ -1032,30 +1016,28 @@ that:</p>
         )))
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This is an example how non-terminal types are converted into user types.</p>
 <p>The easier variant is the conversion of a terminal type (i.e. a <code>Token</code>) into a user type. You can
 find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; TryFrom&lt;&amp;Token&lt;'t&gt;&gt; for Number {
-    type Error = &lt;u32 as FromStr&gt;::Err;
+    type Error = anyhow::Error;
 
-    fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; Result&lt;Self, Self::Error&gt; {
+    fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; std::result::Result&lt;Self, Self::Error&gt; {
         Ok(Self(number.text().parse::&lt;u32&gt;()?))
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Here the scanned text of the token is accessed using the property <code>symbol</code> of the <code>Token</code> type that
-was imported from the <code>parol_runtime</code>crate. This text is then parsed into a <code>u32</code> type and finally
+<span class="boring">}</span></code></pre></pre>
+<p>Here the scanned text of the token is accessed using the method <code>text</code> of the <code>Token</code> type that was
+imported from the <code>parol_runtime</code>crate. This text is then parsed into an <code>u32</code> type and finally
 wrapped into a <code>Number</code>type which is a <em>newtype</em> for <code>u32</code>.</p>
 <p>By implementing some <code>From</code> or <code>TryFrom</code> traits for your user type you can integrate them easily
 into the parse process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
-<a href="https://github.com/jsinger67/parol_basic_interpreter.git">basic interpreter example</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="vanilla-mode"><a class="header" href="#vanilla-mode">Vanilla mode</a></h1>
 <p>Although the auto-generation mode (switch <code>-g</code>, <code>--auto_generate</code>) is the recommended way to use
 <code>parol</code> you can alternatively work in <em>vanilla mode</em>.</p>
@@ -1095,8 +1077,7 @@ Open the build.rs and delete the line 11:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>        .enable_auto_generation()
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>For the sake of completeness delete the <code>-g</code> from the CLI equivalent in the comment at the
 beginning of <code>main</code>.</p>
 <p>Also change the <code>test.txt</code> to the content</p>
@@ -1111,9 +1092,9 @@ crate in the spirit of auto-generation mode.</p>
 <p>Replace the content of <code>vanilla_list_grammar.rs</code> with the following lines</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use id_tree::Tree;
-use miette::{IntoDiagnostic, Result, WrapErr};
-use parol_runtime::parser::{ParseTreeStackEntry, ParseTreeType};
+</span>use parol_runtime::parol_macros::parol;
+use parol_runtime::parser::ParseTreeType;
+use parol_runtime::Result;
 use std::fmt::{Debug, Display, Error, Formatter};
 
 use crate::vanilla_list_grammar_trait::VanillaListGrammarTrait;
@@ -1156,8 +1137,7 @@ impl Display for VanillaListGrammar {
 }
 
 impl VanillaListGrammarTrait for VanillaListGrammar {}
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Now you should be able to run the parser</p>
 <pre><code class="language-shell">$ cargo run ./test.txt
 Finished dev [unoptimized + debuginfo] target(s) in 0.23s
@@ -1187,13 +1167,11 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, _num: &amp;ParseTreeStackEntry, _parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
+    fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Here we can implement our handling:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1201,18 +1179,15 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
-        let text = num.text(parse_tree)?;
-        let number = text
+    fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
+        let symbol = num.text()?;
+        let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .into_diagnostic()
-            .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
+            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
         self.push(number);
         Ok(())
     }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>Now run the parser again</p>
 <pre><code class="language-shell">$ cargo run ./test.txt
     Finished dev [unoptimized + debuginfo] target(s) in 1.54s
@@ -1222,17 +1197,6 @@ Success!
 [1, 2, 3, 4, 5, 6]
 </code></pre>
 <p>Yep! This worked fine.</p>
-<p>The remaining warnings can be removed be deleting the following lines in <code>main.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[macro_use]
-extern crate derive_builder;
-#[macro_use]
-extern crate function_name;
-<span class="boring">}
-</span></code></pre></pre>
-<p>Finally you can remove the references to crates <code>derive_builder</code> and <code>function_name</code> from
-<code>cargo.toml</code>.</p>
 <p>Note that you can`t use user defined types for your ATS types in vanilla mode because no AST types
 are generated at all. But actually you opted in to build the AST types on your own when you disable
 auto-generation mode.</p>
@@ -1247,8 +1211,7 @@ scheme:</p>
 </span>pub trait &lt;NameOfYourGrammar&gt;GrammarTrait&lt;'t&gt; {
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The lifetime parameter &lt;'t&gt; can be left out if the types used don't hold references to the scanned
 text. This is automatically deduced.</p>
 <p>Eventually your grammar processing item implements this trait and can overwrite those functions of
@@ -1280,15 +1243,13 @@ from the previous chapter.</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, _num: &amp;ParseTreeStackEntry, _parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
+    fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
     }
 
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>This is only the semantic action for production 5:</p>
 <pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
 </code></pre>
@@ -1296,8 +1257,7 @@ from the previous chapter.</p>
 nothing but returning <code>Ok</code>.</p>
 <p>The second property of a all these functions is that the first argument always is a mutable
 reference to the implementing item, in this case a reference to <code>VanillaListGrammar</code>.</p>
-<p>The rest of the arguments correspond to the right-hand side of the respective production, except the
-last one which is needed to access the parse tree.</p>
+<p>The rest of the arguments correspond to the right-hand side of the respective production.</p>
 <p>Next you see a concrete implementation of a semantic action, where all arguments of the semantic
 action are used. This is not always necessary the case and depends on your own language
 implementation.</p>
@@ -1308,69 +1268,73 @@ implementation.</p>
     ///
     /// Num: &quot;0|[1-9][0-9]*&quot;;
     ///
-    fn num(&amp;mut self, num: &amp;ParseTreeStackEntry, parse_tree: &amp;Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;()&gt; {
-        let text = num.text(parse_tree)?;
-        let number = text
+    fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
+        let symbol = num.text()?;
+        let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .into_diagnostic()
-            .wrap_err(&quot;num: Error accessing token from ParseTreeStackEntry&quot;)?;
+            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
         self.push(number);
         Ok(())
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>You can see that the parameter of the semantic actions which correspond to the right-hand side of
-the respective productions are all of type <code>&amp;ParseTreeStackEntry</code>. This type from the
-<a href="https://crates.io/crates/parol_runtime">parol_runtime</a> crate is defined this way:</p>
+the respective productions are all of type <code>&amp;ParseTreeType</code>. This type from the
+<a href="https://github.com/jsinger67/parol/blob/main/crates/parol_runtime/src/parser/parse_tree_type.rs">parol_runtime</a>
+crate is defined this way:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
-/// The type of elements in the parser's parse tree stack.
-/// * 'Nd' references nodes not yet inserted into the parse tree.
-/// * 'Id' holds node ids to nodes that are already part of the parse tree.
+/// The type of the elements in the parse tree.
 ///
-#[derive(Debug)]
-pub enum ParseTreeStackEntry&lt;'t&gt; {
-    /// The node is not inserted into the parse tree yet.
-    /// Thus we can access it directly.
-    Nd(Node&lt;ParseTreeType&lt;'t&gt;&gt;),
+/// The lifetime parameter `'t` refers to the lifetime of the scanned text.
+///
+#[derive(Debug, Clone)]
+pub enum ParseTreeType&lt;'t&gt; {
+    ///
+    /// A scanned token.
+    ///
+    T(Token&lt;'t&gt;),
 
-    /// The node is already inserted into the parse tree.
-    /// Wee need to lookup the node in the parse tree via the NodeId.
-    Id(NodeId),
+    ///
+    /// A non-terminal name.
+    /// All names are of static lifetime (see NON_TERMINALS slice of non-terminal names).
+    ///
+    N(&amp;'static str),
 }
-<span class="boring">}
-</span></code></pre></pre>
-<p>Actually it is a wrapper type that provides access to a specific tree node type. It implements three
-functions that you can directly call in your semantic actions:</p>
+<span class="boring">}</span></code></pre></pre>
+<p>It implements two functions that you can directly call in your semantic actions:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>impl&lt;'t&gt; ParseTreeStackEntry&lt;'t&gt; {
-    /// Returns the inner ParseTreeType.
-    pub fn get_parse_tree_type&lt;'a, 'b&gt;(&amp;'a self,
-      parse_tree: &amp;'b Tree&lt;ParseTreeType&lt;'t&gt;&gt;)
-      -&gt; &amp;'a ParseTreeType;
-
-    /// Tries to access the Token of the ParseTreeStackEntry.
+</span>impl&lt;'t&gt; ParseTreeType&lt;'t&gt; {
+    ///
+    /// Tries to access the Token of the ParseTreeType.
     /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    pub fn token&lt;'a, 'b&gt;(&amp;'a self, parse_tree: &amp;'b Tree&lt;ParseTreeType&lt;'t&gt;&gt;)
-      -&gt; Result&lt;&amp;'a Token&lt;'t&gt;&gt;;
+    ///
+    pub fn token(&amp;self) -&gt; Result&lt;&amp;Token&lt;'t&gt;, ParserError&gt; {
+        match self {
+            Self::T(t) =&gt; Ok(t),
+            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+        }
+    }
 
-    /// Tries to access the text of the ParseTreeStackEntry.
+    ///
+    /// Tries to access the scanned text of the ParseTreeType.
     /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    pub fn symbol&lt;'a, 'b&gt;(&amp;'a self, parse_tree: &amp;'b Tree&lt;ParseTreeType&gt;)
-      -&gt; Result&lt;&amp;'a str&gt;;
+    ///
+    pub fn text(&amp;self) -&gt; Result&lt;&amp;str, ParserError&gt; {
+        match self {
+            Self::T(t) =&gt; Ok(t.text()),
+            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+        }
+    }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>In your semantic action you exactly know which argument correspond to a terminal or a non-terminal
-symbol. If you want to access the token that contains a concrete terminal you can use the last two
-functions. If you want to access a non-terminal you can use the first function. But this is normally
-not necessary because the non-terminals are simply nodes with the non-terminal's name that
-represents certain subtrees in the concrete parse-tree. So it is worth to consider the following
-hints.</p>
+symbol. If you want to access the token that contains a concrete terminal you can use one of these
+functions. Non-terminals are of lesser interest because non-terminals are simply nodes with the
+non-terminal's name that represents certain subtrees in the concrete parse-tree. So it is worth to
+consider the following hints.</p>
 <p>A good way to process your grammar is to implement an own typed parse stack in your grammar
 processing item. Then you construct such stack items from the tokens you encounter in your semantic
 actions and push them on your parse stack. They then are something like the <em>results</em> of your
@@ -1388,9 +1352,8 @@ your grammar. As in <a href="SemanticActions.html#semantic-actions-in-vanilla-mo
 <code>parol</code> parser generator creates a trait with functions that represent semantic actions. But here
 the semantic actions are typed and they are generated for the <em>non-terminals of your input grammar</em>
 instead of for <em>productions of the <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a></em>.</p>
-<p>You therefore don't have to mess around with <code>ParseTreeStackEntry</code> and <code>ParseTreeType</code> although you
-still encounter items of type <code>Token</code>. Also the expanded version of your grammar is much less of
-interest for you.</p>
+<p>You therefore don't have to mess around with <code>ParseTreeType</code> although you still encounter items of
+type <code>Token</code>. Also the expanded version of your grammar is much less of interest for you.</p>
 <p><code>parol</code>'s great merit is that it can generate an adapter layer automatically that provides the
 conversion to typed grammar items. Indeed I carved out some simple rules that can be applied
 universally to provide this layer of abstraction by generating the production bound semantic
@@ -1417,8 +1380,7 @@ pub trait CalcGrammarTrait&lt;'t&gt; {
     }
     // ...
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The approach taken in this example is quite interesting. We only implement the semantic action for
 the start symbol of our grammar: <em>calc</em>.</p>
 <p>The implementation can be found in
@@ -1428,17 +1390,13 @@ the functionality of a calculator language.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; CalcGrammarTrait&lt;'t&gt; for CalcGrammar&lt;'t&gt; {
-    /// Semantic action for user production 0:
-    ///
-    /// calc: {instruction &lt;0&gt;&quot;;&quot;};
-    ///
+    /// Semantic action for non-terminal 'Calc'
     fn calc(&amp;mut self, arg: &amp;Calc&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         self.process_calc(arg)?;
         Ok(())
     }
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>But what is the advantage of implementing only the start symbols's semantic action? Well, since the
 start symbol is the root node of each and every concrete parse tree we know, that the generated type
 for it should comprise the complete input as the result of the parsing.</p>
@@ -1451,13 +1409,10 @@ productions belonging to the non-terminal `calc'. There is actually only one pro
 </span>///
 /// Type derived for non-terminal calc
 ///
-#[allow(dead_code)]
-#[derive(Builder, Debug, Clone)]
 pub struct Calc&lt;'t&gt; {
     pub calc_list: Vec&lt;CalcList&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
 right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).</p>
 <p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
@@ -1470,27 +1425,21 @@ right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).
 </span>///
 /// Type derived for non-terminal calcList
 ///
-#[allow(dead_code)]
-#[derive(Builder, Debug, Clone)]
 pub struct CalcList&lt;'t&gt; {
     pub instruction: Box&lt;Instruction&lt;'t&gt;&gt;,
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>And in turn the type <code>Instruction</code> looks like this:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
 /// Type derived for non-terminal instruction
 ///
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
 pub enum Instruction&lt;'t&gt; {
-    Instruction0(Instruction0&lt;'t&gt;),
-    Instruction1(Instruction1&lt;'t&gt;),
+    Assignment(InstructionAssignment&lt;'t&gt;),
+    LogicalOr(InstructionLogicalOr&lt;'t&gt;),
 }
-<span class="boring">}
-</span></code></pre></pre>
+<span class="boring">}</span></code></pre></pre>
 <p>The latter one is an enum with two variants because the non-terminal <code>instruction</code> has two
 productions:</p>
 <pre><code class="language-parol">// ---------------------------------------------------------
@@ -1543,22 +1492,22 @@ opt-level = 3
 
 
 
-        <script type="text/javascript">
+        <script>
             window.playground_copyable = true;
         </script>
 
 
-        <script src="elasticlunr.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="mark.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="searcher.js" type="text/javascript" charset="utf-8"></script>
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
 
-        <script src="clipboard.min.js" type="text/javascript" charset="utf-8"></script>
-        <script src="highlight.js" type="text/javascript" charset="utf-8"></script>
-        <script src="book.js" type="text/javascript" charset="utf-8"></script>
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
 
         <!-- Custom JS scripts -->
 
-        <script type="text/javascript">
+        <script>
         window.addEventListener('load', function() {
             MathJax.Hub.Register.StartupHook('End', function() {
                 window.setTimeout(window.print, 100);
@@ -1566,5 +1515,6 @@ opt-level = 3
         });
         </script>
 
+    </div>
     </body>
 </html>
