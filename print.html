@@ -294,7 +294,7 @@ automatically if the grammar description file <code>my_grammar.par</code> has be
 It provides syntax highlighting, folding and language icons and will surely be useful for you.</p>
 <p>The extension utilizes a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a> that you have
 to install separately.</p>
-<pre><code class="language-shell">cargo install parol-ls
+<pre><code class="language-shell">cargo install --force parol-ls
 </code></pre>
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="the-syntax-of-parols-grammar-description"><a class="header" href="#the-syntax-of-parols-grammar-description">The syntax of <code>parol</code>'s Grammar description</a></h1>
@@ -313,6 +313,17 @@ comments.</p>
 <p>As opposed to EBNF you use C-like line comments starting with two slashes (//) and bock comments
 (/* ... */) in PAR files. This is a result of the close relationship between PAR grammar and
 bison's grammar.</p>
+<blockquote>
+<p>As of version 0.22.0 <code>parol</code> doesn't simply discard language comments. They are provided during
+parse process via a new method <code>&lt;UserType&gt;GrammarTrait::on_comment_parsed</code> which is called for each
+single comment in order of their appearance each time before the parser consumes a normal token from
+token stream.</p>
+<p>The method is default implemented and the user have to provide an own implementation if she is
+interested in language comments.</p>
+<p>This is a minimal support but can greatly improve the usability. Also note that this comment
+handling is currently only supported in <code>parols</code>'s auto-generation mode.</p>
+<p>Any feedback is appreciated.</p>
+</blockquote>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
 <p>Non-terminals are treated case sensitive, i. e. &quot;list&quot; and &quot;List&quot; are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
