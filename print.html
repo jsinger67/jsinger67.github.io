@@ -162,10 +162,10 @@ description file. <code>parol</code> is also a library that you can use in your 
 process via a cargo build script (<code>build.rs</code>).</p>
 <p><code>parol</code> can be instructed to infer and generate all AST data types that you would otherwise have to
 design yourself. <code>parol</code> can do this simply by analyzing your language's grammar description.</p>
-<p>You can control the process of AST type generation in two ways. Firstly you can mark elements for
-omission in your AST. Secondly you can specify your own types for language elements. They are then
+<p>You can control the process of AST type generation in two ways. Firstly, you can mark elements for
+omission in your AST. Secondly, you can specify your own types for language elements, which are then
 inserted at the right position into the resulting AST type.</p>
-<p>Language description and language implementation is strictly separated in <code>parol</code>. Thus you can
+<p>Language description and language implementation is strictly separated in <code>parol</code>. Thus, you can
 design your language's grammar without any need to process anything because generated parsers
 function by default as acceptors. This allows you to do <strong>real rapid prototyping</strong> of your grammar.</p>
 <p><code>parol</code> generates a trait as interface between your language processing and the generated parser.
@@ -179,6 +179,9 @@ during the process of parsing.</p>
 <p><code>parol</code> now provides a whole ecosystem of tools including an
 <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">Extension</a> for Visual Studio Code
 and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a>.</p>
+<p>As of version 0.24.0 generated parsers can recover from syntax errors automatically. This means that
+the parser usually doesn't not stop parsing the input after the first syntax error occurs, and
+instead tries to synchronize with the input in order to continue the analysis accordingly.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="history-of-this-project"><a class="header" href="#history-of-this-project">History of this project</a></h1>
 <p>The <code>parol</code> Parser Generator started as a personal journey to master LL(k) parsing with the concise
 means of deterministic finite automata.</p>
@@ -1483,6 +1486,44 @@ opt-level = 3
 <h3 id="credits"><a class="header" href="#credits">Credits</a></h3>
 <p>Thanks to <a href="https://github.com/dalance">dalance</a> for reporting
 <a href="https://github.com/jsinger67/parol/issues/49">#49 (build.rs performance)</a></p>
+<h2 id="performance-of-parser-generation"><a class="header" href="#performance-of-parser-generation">Performance of parser generation</a></h2>
+<p>First you need to understand that the necessity to frequently generate the parser from a given
+grammar is drastically diminished in <code>parol</code> because of its design.
+That means <code>parol</code> generates besides the data structures for your grammar only an interface and the
+plumping to call its method.
+This cuts the dependencies for parser generation from any code you write to process your grammar,
+i.e. the interface's implementation.</p>
+<blockquote>
+<p>By the way, this property enables ad hoc generation of acceptors for any valid grammar, which I like
+to call <em>rapid prototyping</em> for your grammar.</p>
+</blockquote>
+<p>So, you only need to generate the parser if you change anything in your grammar description, i.e.
+in your *.par file.
+If parser generation is expensive for your grammar, what indeed can be the case, I advice you to put
+the generated parser and the user trait under source control.</p>
+<p>The next thing you should understand is that you should design your grammar to be LL(k) with k as
+minimal as possible. I know, this can be hard but will pay out in the end.</p>
+<p>Also try to optimize your grammar for the following goals:</p>
+<ul>
+<li>Minimal number of productions</li>
+<li>Avoid productions that only rename a non-terminal, i.e. the ones in the form
+<pre><code class="language-parol">A: B;
+</code></pre>
+</li>
+<li>Try to disambiguate your productions, i.e. avoid duplications with the following form
+<pre><code class="language-parol">A: X Y Z;
+B: X Y Z;
+</code></pre>
+Pin down why you need productions with identical right-hand-sides. Aren't they actually the same
+and shouldn't they rather be unified?</li>
+</ul>
+<p>If you have a historical grammar definition that is left recursive, which in deed is possible
+for instance because of the ubiquity of Yacc/Bison grammar descriptions, you should allow for extra
+time and effort to convert it to a working right recursive one.</p>
+<p><code>parol</code> currently provides no special support for this phase except that it is able to detect left
+recursions in your grammar.</p>
+<p>I may provide support for parts of this problem in the future, for instance for direct left
+recursions somehow.</p>
 
                     </main>
 

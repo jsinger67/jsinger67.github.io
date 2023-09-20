@@ -161,10 +161,10 @@ description file. <code>parol</code> is also a library that you can use in your 
 process via a cargo build script (<code>build.rs</code>).</p>
 <p><code>parol</code> can be instructed to infer and generate all AST data types that you would otherwise have to
 design yourself. <code>parol</code> can do this simply by analyzing your language's grammar description.</p>
-<p>You can control the process of AST type generation in two ways. Firstly you can mark elements for
-omission in your AST. Secondly you can specify your own types for language elements. They are then
+<p>You can control the process of AST type generation in two ways. Firstly, you can mark elements for
+omission in your AST. Secondly, you can specify your own types for language elements, which are then
 inserted at the right position into the resulting AST type.</p>
-<p>Language description and language implementation is strictly separated in <code>parol</code>. Thus you can
+<p>Language description and language implementation is strictly separated in <code>parol</code>. Thus, you can
 design your language's grammar without any need to process anything because generated parsers
 function by default as acceptors. This allows you to do <strong>real rapid prototyping</strong> of your grammar.</p>
 <p><code>parol</code> generates a trait as interface between your language processing and the generated parser.
@@ -178,6 +178,9 @@ during the process of parsing.</p>
 <p><code>parol</code> now provides a whole ecosystem of tools including an
 <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">Extension</a> for Visual Studio Code
 and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a>.</p>
+<p>As of version 0.24.0 generated parsers can recover from syntax errors automatically. This means that
+the parser usually doesn't not stop parsing the input after the first syntax error occurs, and
+instead tries to synchronize with the input in order to continue the analysis accordingly.</p>
 
                     </main>
 
