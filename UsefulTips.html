@@ -165,7 +165,7 @@ opt-level = 3
 <p>First you need to understand that the necessity to frequently generate the parser from a given
 grammar is drastically diminished in <code>parol</code> because of its design.
 That means <code>parol</code> generates besides the data structures for your grammar only an interface and the
-plumping to call its method.
+plumping to call its methods.
 This cuts the dependencies for parser generation from any code you write to process your grammar,
 i.e. the interface's implementation.</p>
 <blockquote>
@@ -178,14 +178,14 @@ If parser generation is expensive for your grammar, what indeed can be the case,
 the generated parser and the user trait under source control.</p>
 <p>The next thing you should understand is that you should design your grammar to be LL(k) with k as
 minimal as possible. I know, this can be hard but will pay out in the end.</p>
-<p>Also try to optimize your grammar for the following goals:</p>
+<p>Also try to optimize your grammar for the goal &quot;Minimal number of productions&quot;. This can be often
+broken down to these constraints:</p>
 <ul>
-<li>Minimal number of productions</li>
 <li>Avoid productions that only rename a non-terminal, i.e. the ones in the form
 <pre><code class="language-parol">A: B;
 </code></pre>
 </li>
-<li>Try to disambiguate your productions, i.e. avoid duplications with the following form
+<li>Try to disambiguate your productions, i.e. avoid duplications that have the following form
 <pre><code class="language-parol">A: X Y Z;
 B: X Y Z;
 </code></pre>
@@ -197,7 +197,7 @@ for instance because of the ubiquity of Yacc/Bison grammar descriptions, you sho
 time and effort to convert it to a working right recursive one.</p>
 <p><code>parol</code> currently provides no special support for this phase except that it is able to detect left
 recursions in your grammar.</p>
-<p>I may provide support for parts of this problem in the future, for instance for direct left
+<p>I may provide support for parts of this problem in the future, for instance to remove direct left
 recursions somehow.</p>
 
                     </main>
