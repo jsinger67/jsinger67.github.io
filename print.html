@@ -330,6 +330,15 @@ interested in language comments.</p>
 handling is currently only supported in <code>parols</code>'s auto-generation mode.</p>
 <p>Any feedback is appreciated.</p>
 </blockquote>
+<h2 id="defining-the-grammar-type"><a class="header" href="#defining-the-grammar-type">Defining the grammar type</a></h2>
+<p>In the global header section you can define the grammar type you want to use in your grammar
+description.</p>
+<p>The default grammar type is LL(k) and can be omitted.</p>
+<pre><code class="language-parol">%grammar_type 'LL(k)'
+</code></pre>
+<p>You have to option to use LALR(1) grammar type this way.</p>
+<pre><code class="language-parol">%grammar_type 'LALR(1)'
+</code></pre>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
 <p>Non-terminals are treated case sensitive, i. e. &quot;list&quot; and &quot;List&quot; are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
@@ -424,13 +433,13 @@ making progress in the input. Currently there is no check for this scenario in <
 <!-- markdownlint-disable no-inline-html -->
 <h2 id=scanner-states>Scanner states</h2>
 <!-- markdownlint-enable no-inline-html -->
-<p>Additionally, <em>as of version <code>v0.2.0</code></em> the grammar supports <strong>multiple scanner states</strong>. This
-feature is known from Flex as
+<p><code>Parol</code> supports <strong>multiple scanner states</strong>. This feature is known from Flex as
 <a href="https://www.cs.princeton.edu/~appel/modern/c/software/flex/flex_toc.html#TOC11">Start conditions</a>
-and provides more flexibility in defining several scanners for several parts of your grammar. In
-contrast to Flex the scanner state switching is defined directly within your grammar description and
-not in semantic actions. This decision is made to foster the principle of strict separation of
-grammar description and grammar processing in semantic actions.</p>
+and provides more flexibility in defining several scanners for several parts of your grammar.</p>
+<p><code>Parol</code> provides two different ways to control scanner states directly within your grammar
+description thereby holding the principle of strict separation of grammar description and grammar
+processing in semantic actions. This means no scanner switching in your code, but in the grammar
+description. Only because of this rapid prototyping is possible.</p>
 <h3 id="the-default-scanner-state-initial"><a class="header" href="#the-default-scanner-state-initial">The Default scanner state INITIAL</a></h3>
 <p>INITIAL is the name of the default scanner state 0. Its behavior is defined with <code>ScannerDirectives</code>
 in the global <code>Declaration</code> section, such as:</p>
@@ -469,7 +478,12 @@ in angle brackets. Like this:</p>
 </code></pre>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
-<p>Scanner state switching is initiated within your productions like in the following two examples:</p>
+<h3 id="parser-bases-scanner-switching"><a class="header" href="#parser-bases-scanner-switching">Parser-bases scanner switching</a></h3>
+<p>The first way to control scanner states is to define switching directives within your productions.
+This way can only used for LL(k) grammars because the parser has full knowledge about which
+production to handle next when certain input has been encountered from left to right.</p>
+<p>Parser-bases scanner state switching is initiated within your productions like in the following two
+examples:</p>
 <pre><code class="language-parol">String: StringDelimiter %sc(String) StringContent StringDelimiter %sc();
 
 </code></pre>
@@ -493,6 +507,39 @@ an appropriate grammar formulation.</p>
 <p>If the scanner switch was successful the lookahead buffer is invalidated.</p>
 </blockquote>
 <p>You may have look at example <code>scanner_states</code> that demonstrates the handling of scanner states.</p>
+<h3 id="scanner-bases-scanner-switching"><a class="header" href="#scanner-bases-scanner-switching">Scanner-bases scanner switching</a></h3>
+<p>LR grammars reduce the parser stack from the right side and thus you can't decide the scanner state
+switching from the perspective of the parser. The tokens are already read and pushed on the parse
+stack before it can be decided what production to reduce on them. This means scanner state switching
+must work different here.
+When incorporating the scanner state switching into the scanner itself the state can be chosen as
+early as possible solely from the current state the scanner is in and the token read next.
+The good new is that this kind of scanner switching works for LL parsers too and most LL(k) grammars
+can be adopted to use scanner-based scanner switching.</p>
+<p>Scanner-based scanner switching is defined solely in the header of the grammar file right where the
+scanners are defined.</p>
+<p>You use the <code>%on</code> and <code>%enter</code> directives to control it (snippets taken from the <code>basic</code> example):</p>
+<pre><code class="language-parol">%on Rem %enter Cmnt
+%on If, AssignOp, Print %enter Expr
+
+%scanner Cmnt {
+    %auto_newline_off
+    %on EndOfLine %enter INITIAL
+}
+%scanner Expr {
+    %auto_newline_off
+    %on Then, Goto, EndOfLine %enter INITIAL
+}
+</code></pre>
+<p>After the <code>%on</code> directive you can name a list of primary non-terminals which only contain the
+terminal like this:</p>
+<pre><code class="language-parol">Rem : 'REM'^;
+</code></pre>
+<p>After the <code>%enter</code> directive you name the target scanner state.</p>
+<blockquote>
+<p><em>Be aware that mixing of both parser-bases and scanner-based scanner state switching in one grammar
+file is not allowed and will result in errors.</em></p>
+</blockquote>
 <h2 id="omitting-grammar-symbol-from-the-ast-in-auto-gen-modus"><a class="header" href="#omitting-grammar-symbol-from-the-ast-in-auto-gen-modus">Omitting grammar symbol from the AST in auto-gen modus</a></h2>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST in auto-gen modus.</p>
