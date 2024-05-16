@@ -365,6 +365,7 @@ right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).
 <blockquote>
 <p>The reason why boxed types are needed is explained
 <a href="AstGeneration.html#recursive-structure-of-a-grammar">here</a>.</p>
+<p>Also note that in the meantime the very <code>Box</code> here could be optimized away by <code>parol</code>. This is a great example of the evolution of it.</p>
 </blockquote>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

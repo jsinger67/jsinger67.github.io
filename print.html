@@ -246,6 +246,7 @@ prototyping</strong> for your language!</li>
 <li>Build script integration to invoke <code>parol</code> automatically during the build of your own crate</li>
 <li>An <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">extension</a> for Visual Studio
 Code and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a></li>
+<li>The possibility to use LALR(1) grammars optionally instead of LL(k) ones</li>
 <li>And all those features Lelek never received</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h1>
@@ -277,7 +278,7 @@ two files from the initial grammar definition.</p>
 cargo build
 </code></pre>
 <p>And run the test with the generated parser:</p>
-<pre><code class="language-shell">$ cargo run -- ./test.txt
+<pre><code class="language-shell">$ cargo run ./test.txt
     Finished dev [unoptimized + debuginfo] target(s) in 0.20s
      Running `target\debug\my_grammar.exe ./test.txt`
 Parsing took 4 milliseconds.
@@ -918,6 +919,8 @@ equivalent representations.
 </li>
 </ul>
 <p>These transformations are applied iteratively until all EBNF constructs are replaced.</p>
+<p>Note that the transformations applied on LR grammars a slightly different, but the principle is the
+same.</p>
 <h2 id="sanity-checks"><a class="header" href="#sanity-checks">Sanity checks</a></h2>
 <p>Then <code>parol</code> checks this pre-transformed input grammar for several properties that prevent a
 successful processing. Those unwanted properties are</p>
@@ -989,6 +992,12 @@ elements to <code>struct</code>s, e.g.:</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>This results in finite type sizes.</p>
+<p>Note that <code>parol</code> has a way to minimize the use of boxed types in the generated parser.
+The <code>parol</code> tool supports a new command line switch (-b, --min_boxes) that enables the minimization
+of used boxes in generated data structures. The <code>parol::build::Builder</code> also provides a new method
+<code>minimize_boxed_types()</code> that you can call in your build scripts.</p>
+<p><code>parol</code> then determines where no recursions can occur by applying extra calculations on the
+structure of the grammar.</p>
 <h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
@@ -1484,6 +1493,7 @@ right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).
 <blockquote>
 <p>The reason why boxed types are needed is explained
 <a href="AstGeneration.html#recursive-structure-of-a-grammar">here</a>.</p>
+<p>Also note that in the meantime the very <code>Box</code> here could be optimized away by <code>parol</code>. This is a great example of the evolution of it.</p>
 </blockquote>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {

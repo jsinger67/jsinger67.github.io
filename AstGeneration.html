@@ -168,6 +168,8 @@ equivalent representations.
 </li>
 </ul>
 <p>These transformations are applied iteratively until all EBNF constructs are replaced.</p>
+<p>Note that the transformations applied on LR grammars a slightly different, but the principle is the
+same.</p>
 <h2 id="sanity-checks"><a class="header" href="#sanity-checks">Sanity checks</a></h2>
 <p>Then <code>parol</code> checks this pre-transformed input grammar for several properties that prevent a
 successful processing. Those unwanted properties are</p>
@@ -239,6 +241,12 @@ elements to <code>struct</code>s, e.g.:</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>This results in finite type sizes.</p>
+<p>Note that <code>parol</code> has a way to minimize the use of boxed types in the generated parser.
+The <code>parol</code> tool supports a new command line switch (-b, --min_boxes) that enables the minimization
+of used boxes in generated data structures. The <code>parol::build::Builder</code> also provides a new method
+<code>minimize_boxed_types()</code> that you can call in your build scripts.</p>
+<p><code>parol</code> then determines where no recursions can occur by applying extra calculations on the
+structure of the grammar.</p>
 <h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
