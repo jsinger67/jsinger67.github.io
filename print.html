@@ -340,6 +340,8 @@ description.</p>
 <p>You have to option to use LALR(1) grammar type this way.</p>
 <pre><code class="language-parol">%grammar_type 'LALR(1)'
 </code></pre>
+<p>The support of the new grammar type is still in a phase of improvement. If there are any obstacles
+here, you can be sure that they will be soon got out of the way.</p>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
 <p>Non-terminals are treated case sensitive, i. e. &quot;list&quot; and &quot;List&quot; are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
@@ -919,8 +921,8 @@ equivalent representations.
 </li>
 </ul>
 <p>These transformations are applied iteratively until all EBNF constructs are replaced.</p>
-<p>Note that the transformations applied on LR grammars a slightly different, but the principle is the
-same.</p>
+<p>Note that the transformations applied on LR grammars are slightly different, but the principle is
+the same.</p>
 <h2 id="sanity-checks"><a class="header" href="#sanity-checks">Sanity checks</a></h2>
 <p>Then <code>parol</code> checks this pre-transformed input grammar for several properties that prevent a
 successful processing. Those unwanted properties are</p>
@@ -1580,6 +1582,9 @@ and shouldn't they rather be unified?</li>
 <p>If you have a historical grammar definition that is left recursive, which in deed is possible
 for instance because of the ubiquity of Yacc/Bison grammar descriptions, you should allow for extra
 time and effort to convert it to a working right recursive one.</p>
+<p>Or you use the opportunity to use LALR(1) grammars without having to forgo the comfort of <code>parol</code>.
+Have a look at the specification of a
+<a href="https://jsinger67.github.io/ParGrammar.html#defining-the-grammar-type">grammar type</a>.</p>
 <p><code>parol</code> currently provides no special support for this phase except that it is able to detect left
 recursions in your grammar.</p>
 <p>I may provide support for parts of this problem in the future, for instance to remove direct left
