@@ -325,7 +325,7 @@ in angle brackets. Like this:</p>
 INITIAL.</p>
 <h3 id="parser-bases-scanner-switching"><a class="header" href="#parser-bases-scanner-switching">Parser-bases scanner switching</a></h3>
 <p>The first way to control scanner states is to define switching directives within your productions.
-This way can only used for LL(k) grammars because the parser has full knowledge about which
+This way can only be used for LL(k) grammars because the parser has full knowledge about which
 production to handle next when certain input has been encountered from left to right.</p>
 <p>Parser-bases scanner state switching is initiated within your productions like in the following two
 examples:</p>
@@ -344,12 +344,19 @@ stack and to switch to a scanner configuration with the given index in parenthes
 <p>The <code>%pop</code> instruction is used to pop the index of the scanner pushed before and to switch to the
 scanner configuration with that index.</p>
 <blockquote>
-<p>Currently the scanner state switching only works if the lookahead
-<strong>at the point where the switch is made</strong> is only of size 1 because the lookahead mechanism is not
-aware of scanner states. This means the provision of lookahead tokens will be made with the current
-active scanner and may fail if a token is not known by it. In most cases this can be circumvented by
-an appropriate grammar formulation.</p>
-<p>If the scanner switch was successful the lookahead buffer is invalidated.</p>
+<p>Note that <code>%push</code> and <code>%pop</code> instructions should be balanced. This means that in one context use
+<strong>only one</strong> of the combinations <code>%push(S1)</code>/<code>%pop</code> and <code>%sc(&lt;S1&gt;)</code>/<code>%sc(&lt;S2&gt;)</code>. <code>%push</code>/<code>%pop</code>
+provides a (call) stack semantics over scanner states whereas <code>%sc</code>/<code>%sc</code> can be used to represent
+scanner state graphs semantics. Mixing both semantics should be avoided or at should least be
+carefully considered.</p>
+</blockquote>
+<blockquote>
+<p>Currently the scanner parser-based state switching only works if the lookahead
+<strong>at the point where the switch is made</strong> is only of size 1 because the lookahead mechanism is
+directly influenced by the current scanner state. This means the provision of lookahead tokens will
+be made with the current active scanner and may fail if a token is not known by it. In most cases
+this can be circumvented by an appropriate grammar formulation. If this is not possible consider to
+use <code>Scanner-bases scanner switching</code> instead.</p>
 </blockquote>
 <p>You may have look at example <code>scanner_states</code> that demonstrates the handling of scanner states.</p>
 <h3 id="scanner-bases-scanner-switching"><a class="header" href="#scanner-bases-scanner-switching">Scanner-bases scanner switching</a></h3>
@@ -381,26 +388,44 @@ terminal like this:</p>
 <pre><code class="language-parol">Rem : 'REM'^;
 </code></pre>
 <p>After the <code>%enter</code> directive you name the target scanner state.</p>
+<p>You also may have look at examples <code>scanner_states_lr</code> for a simple demonstration and at example
+<code>basic</code> for a more advanced one.</p>
 <blockquote>
 <p><em>Be aware that mixing of both parser-bases and scanner-based scanner state switching in one grammar
 file is not allowed and will result in errors.</em></p>
 </blockquote>
-<h2 id="omitting-grammar-symbol-from-the-ast-in-auto-gen-modus"><a class="header" href="#omitting-grammar-symbol-from-the-ast-in-auto-gen-modus">Omitting grammar symbol from the AST in auto-gen modus</a></h2>
+<h2 id="omitting-grammar-symbols-from-the-ast-in-auto-gen-modus"><a class="header" href="#omitting-grammar-symbols-from-the-ast-in-auto-gen-modus">Omitting grammar symbols from the AST in auto-gen modus</a></h2>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST in auto-gen modus.</p>
 <pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
 <p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
-<code>Alternations</code>. The parentheses are ignored.</p>
+<code>Alternations</code>. The parentheses are left out.</p>
 <h2 id="assigning-user-types-to-grammar-symbols"><a class="header" href="#assigning-user-types-to-grammar-symbols">Assigning user types to grammar symbols</a></h2>
 <p>You can specify a user type to be inserted into the AST structure at the place where the symbol
 would otherwise had the originally generated type.
 Add after a grammar symbol a colon followed by a user type name to instruct <code>parol</code> to use this type
-instead. In your language implementation you have to provide fallible or infallible conversions
-from the original generated types to your types by implementing one of the traits <code>From</code> or <code>TryFrom</code>.
-An examples can be found in the <code>list_auto</code> example.
-You can also define aliases for the user type names by inserting as many <code>%user_type</code> directives as
-you want. Then use these aliases behind the colons.</p>
+instead. In your language implementation you have to provide fallible conversions from references of
+the original generated types (<code>&amp;T</code>) to your types (<code>U</code>) by implementing the trait
+<code>TryFrom&lt;&amp;T&gt; for U</code>.</p>
+<p>An examples can be found in the <code>list_auto</code> example.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;'t&gt; TryFrom&lt;&amp;Token&lt;'t&gt;&gt; for Number {
+    type Error = anyhow::Error;
+
+    fn try_from(number: &amp;Token&lt;'t&gt;) -&gt; std::result::Result&lt;Self, Self::Error&gt; {
+        Ok(Self(number.text().parse::&lt;u32&gt;()?))
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>You can also define aliases for the user type names by inserting as many <code>%user_type</code> directives as
+you want.</p>
+<pre><code class="language-parol">%user_type Number = crate::list_grammar::Number
+</code></pre>
+<p>Then use these aliases behind the colons.</p>
+<pre><code class="language-parol">Num: &quot;0|[1-9][0-9]*&quot;: Number;
+</code></pre>
 <h2 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h2>
 <p>Semantic actions are strictly separated from your grammar description.
 You will use a generated trait with default implementations for each production of your grammar. You
