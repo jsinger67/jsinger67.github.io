@@ -1038,9 +1038,9 @@ processing itself.</p>
 <p>You can specify a user type to be inserted into the AST structure at the place where the symbol
 would otherwise had the originally generated type.
 Add after a grammar symbol a colon followed by a user type name to instruct <code>parol</code> to use this type
-instead. In your language implementation you have to provide fallible or infallible conversions
-from the original generated types to your types by implementing one of the traits <code>From</code> or <code>TryFrom</code>.
-An examples can be found in the <code>list_auto</code> example.
+instead. In your language implementation you have to provide fallible conversions from references of
+the original generated types (<code>&amp;T</code>) to your types (<code>U</code>) by implementing the trait
+<code>TryFrom&lt;&amp;T&gt; for U</code>. An examples can be found in the <code>list_auto</code> example.
 You can also define aliases for the user type names by inserting as many <code>%user_type</code> directives as
 you want. Then use these aliases behind the colons.</p>
 <p>You may have look at example <a href="https://github.com/jsinger67/parol/blob/6800c3060bad0df033e55cf113cfd16e860a5373/examples/list_auto/list.par">list_auto</a>
@@ -1134,8 +1134,8 @@ find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
 <p>Here the scanned text of the token is accessed using the method <code>text</code> of the <code>Token</code> type that was
 imported from the <code>parol_runtime</code>crate. This text is then parsed into an <code>u32</code> type and finally
 wrapped into a <code>Number</code>type which is a <em>newtype</em> for <code>u32</code>.</p>
-<p>By implementing some <code>From</code> or <code>TryFrom</code> traits for your user type you can integrate them easily
-into the parse process.</p>
+<p>By implementing <code>TryFrom</code> traits for your user type you can integrate them easily into the parse
+process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
 <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
