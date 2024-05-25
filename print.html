@@ -1642,16 +1642,20 @@ pub struct Number&lt;'t&gt; {
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The recursion occurs here by containing <code>List</code> in <code>ListListItemList</code>.</p>
-<p>Use instead <code>parol</code>'s own repetition construct, which will result in the generation of a data type
+<p>Use instead <code>parol</code>'s own repetition construct (<code>{...}</code>), which will result in the generation of a data type
 containing a vector.</p>
 <pre><code class="language-parol">List: { ListItem };
-ListItem: ...;
+ListItem: Number;
+Number: /0|[1-9][0-9]*/: Number;
 </code></pre>
 <p>This will generate iterative data structures like this:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>pub struct List&lt;'t&gt; {
     pub list_list: Vec&lt;ListList&lt;'t&gt;&gt;,
+}
+pub struct ListList {
+    pub list_item: Box&lt;ListItem&gt;,
 }
 pub struct ListItem&lt;'t&gt; {
     pub number: Box&lt;Number&lt;'t&gt;&gt;,
