@@ -1697,6 +1697,27 @@ in the generated parser</li>
 </ul>
 </li>
 </ul>
+<h2 id="q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments"><a class="header" href="#q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments">Q: I get warnings in generated code 'This function has too many arguments'</a></h2>
+<p>A: Configure the builder in your <code>build.rs</code> to let <code>parol</code> generate a</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span>#![allow(clippy::too_many_arguments)]
+<span class="boring">fn main() {
+</span><span class="boring">}</span></code></pre></pre>
+<p>line at the beginning of your generated file.</p>
+<p>Add this line in the builder configuration somewhere before the call to <code>.generate_parser()</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>        .inner_attributes(vec![InnerAttributes::AllowTooManyArguments])
+<span class="boring">}</span></code></pre></pre>
+<p>Don't forget to import the <code>InnerAttributes</code> into your <code>build.rs</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use parol::{build::Builder, InnerAttributes, ParolErrorReporter};
+<span class="boring">}</span></code></pre></pre>
+<p>Another way to avoid this waring is to modify your grammar such that the lengths of the right-hand
+sides of your productions are decreased. Therefore examine the productions that correlate to the
+functions where the warnings occur. Then consider to factor out parts of the RHS into separate
+productions.</p>
 
                     </main>
 
