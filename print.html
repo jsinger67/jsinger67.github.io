@@ -433,6 +433,18 @@ avoid terminals like this:</p>
 </code></pre>
 <p>Internally the tokenizer will enter a loop and match the empty string over and over again without
 making progress in the input. Currently there is no check for this scenario in <code>parol_runtime</code>.</p>
+<p>There is a <strong>workaround</strong> when you simply need possibly empty tokens, at least for the <code>?</code> and <code>*</code>
+ones.
+Make the token <code>+</code> and put their uses in optional expressions <code>[]</code>. This makes them non-empty and
+also their possible emptiness explicit for the grammar:</p>
+<pre><code class="language-parol">RuleWithWhiteSpaces: WhiteSpaces;
+WhiteSpaces: /[ \t]*/;
+
+// =&gt;
+
+RuleWithWhiteSpaces: [ WhiteSpaces ];
+WhiteSpaces: /[ \t]+/;
+</code></pre>
 <!-- markdownlint-disable no-inline-html -->
 <h2 id=scanner-states>Scanner states</h2>
 <!-- markdownlint-enable no-inline-html -->
