@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,10 +7,10 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -32,15 +32,17 @@
 
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -62,43 +64,49 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
             var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html" class="active"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="ParolVersion2.html"><strong aria-hidden="true">10.</strong> Changes in version 2</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">11.</strong> Useful tips</a></li><li class="chapter-item expanded "><a href="QnA.html"><strong aria-hidden="true">12.</strong> Q&A</a></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -166,15 +174,15 @@ and showed the vulnerability of the existing implementation to changes in the in
 actually shows how easy it is to work this way.</p>
 <p>We will elaborate this by implementing a list example in an alternative way.</p>
 <pre><code class="language-parol">%start List
-%title &quot;A possibly empty comma separated list of integers&quot;
-%comment &quot;A trailing comma is allowed.&quot;
+%title "A possibly empty comma separated list of integers"
+%comment "A trailing comma is allowed."
 
 %%
 
 List: Items TrailingComma^;
-Items: Num {&quot;,&quot;^ Num} | ;
-Num: &quot;0|[1-9][0-9]*&quot;;
-TrailingComma: [&quot;,&quot;^];
+Items: Num {","^ Num} | ;
+Num: "0|[1-9][0-9]*";
+TrailingComma: [","^];
 </code></pre>
 <p>Let's generate a new binary crate:</p>
 <p>You can try this grammar by calling</p>
@@ -234,12 +242,12 @@ impl Display for VanillaListGrammar {
     fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
         writeln!(
             f,
-            &quot;[{}]&quot;,
+            "[{}]",
             self.numbers
                 .iter()
-                .map(|e| format!(&quot;{}&quot;, e))
+                .map(|e| format!("{}", e))
                 .collect::&lt;Vec&lt;String&gt;&gt;()
-                .join(&quot;, &quot;)
+                .join(", ")
         )
     }
 }
@@ -263,7 +271,7 @@ but without any processing.</p>
 than we had to in the auto-generation mode.</p>
 <p>So open the generated file <code>vanilla_list-exp-par</code> and look for the production where a <code>Num</code> token
 is accepted:</p>
-<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
+<pre><code class="language-parol">/* 5 */ Num: "0|[1-9][0-9]*";
 </code></pre>
 <p>Then we need to implement the semantic action for exactly this production number 5. We find the
 trait function to implement in the file <code>src\vanilla_list_grammar_trait.rs</code> and copy it into the
@@ -273,7 +281,7 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
 </span>impl VanillaListGrammarTrait for VanillaListGrammar {
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
@@ -285,13 +293,13 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
 </span><span class="boring">fn main() {
 </span>    /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         let symbol = num.text()?;
         let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
+            .map_err(|e| parol!("num: Parse error: {e}"))?;
         self.push(number);
         Ok(())
     }
@@ -317,7 +325,7 @@ auto-generation mode.</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="SemanticActions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="SemanticActions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -331,7 +339,7 @@ auto-generation mode.</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="SemanticActions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="SemanticActions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

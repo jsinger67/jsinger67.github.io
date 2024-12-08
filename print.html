@@ -1,17 +1,17 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
         <title>The Parol Parser Generator</title>
-        <meta name="robots" content="noindex" />
+        <meta name="robots" content="noindex">
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -33,15 +33,17 @@
 
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -63,43 +65,49 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
             var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="ParolVersion2.html"><strong aria-hidden="true">10.</strong> Changes in version 2</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">11.</strong> Useful tips</a></li><li class="chapter-item expanded "><a href="QnA.html"><strong aria-hidden="true">12.</strong> Q&A</a></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -283,7 +291,7 @@ cargo build
      Running `target\debug\my_grammar.exe ./test.txt`
 Parsing took 4 milliseconds.
 Success!
-MyGrammar { my_grammar: Token { symbol: &quot;Hello world!&quot;, token_type: 5, location: Location { line: 4, column: 5, length: 12, start_pos: 0, pos: 97, file_name: &quot;./test.txt&quot; } } }
+MyGrammar { my_grammar: Token { symbol: "Hello world!", token_type: 5, location: Location { line: 4, column: 5, length: 12, start_pos: 0, pos: 97, file_name: "./test.txt" } } }
 </code></pre>
 <p><code>parol</code> has generated a full fledged parser with AST types suitable for your grammar description!</p>
 <p>Now you can open your favorite editor</p>
@@ -312,8 +320,8 @@ comments.</p>
 <p>Using the <code>%line_comment</code> and <code>%block_comment</code> constructs you can easily define your language's
 comments. For example you can define comments like it's done in the calc example
 <code>calc.par</code>:</p>
-<pre><code class="language-parol">%line_comment &quot;//&quot;
-%block_comment  &quot;/\*&quot; &quot;\*/&quot;
+<pre><code class="language-parol">%line_comment "//"
+%block_comment  "/\*" "\*/"
 </code></pre>
 <p>You can supply more than one of these two comment declarations. They will all be considered as valid
 comments.</p>
@@ -343,7 +351,7 @@ description.</p>
 <p>The support of the new grammar type is still in a phase of improvement. If there are any obstacles
 here, you can be sure that they will be soon got out of the way.</p>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
-<p>Non-terminals are treated case sensitive, i. e. &quot;list&quot; and &quot;List&quot; are different symbols. But it is
+<p>Non-terminals are treated case sensitive, i. e. "list" and "List" are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
 style on casing in your description.</p>
 <h2 id="sections"><a class="header" href="#sections">Sections</a></h2>
@@ -373,18 +381,18 @@ directive.
 With this you have to handle whitespace tokens on your own in your grammar.</p>
 <h3 id="terminal-name-generation"><a class="header" href="#terminal-name-generation">Terminal name generation</a></h3>
 <p>The names of the terminals are deduced from the content of the terminal itself. For instance, for a
-terminal &quot;:=&quot; it creates the terminal name &quot;ColonEqu&quot;, see generated parser for Oberon-0. If you
+terminal ":=" it creates the terminal name "ColonEqu", see generated parser for Oberon-0. If you
 want this name to be more expressive, you can dedicate a separate production to the terminal, lets
 say:</p>
-<pre><code class="language-parol">Assign: &quot;:=&quot;;
+<pre><code class="language-parol">Assign: ":=";
 </code></pre>
-<p>With this trick you define a so called &quot;primary non-terminal for a terminal&quot; (I coined it this way)
-that instructs the name generation to name the terminal &quot;Assign&quot;.</p>
+<p>With this trick you define a so called "primary non-terminal for a terminal" (I coined it this way)
+that instructs the name generation to name the terminal "Assign".</p>
 <h3 id="terminal-representation"><a class="header" href="#terminal-representation">Terminal representation</a></h3>
 <p>As of version 0.14.0 <code>parol</code> supports three different styles of terminal representations, all of
 them being valid and allowed.</p>
 <ul>
-<li>The legacy syntax (<code>&quot;...&quot;</code>). These terminals are treated as if they were regular expressions.</li>
+<li>The legacy syntax (<code>"..."</code>). These terminals are treated as if they were regular expressions.</li>
 <li>New single quoted string literals (<code>'..'</code>) are literal or raw strings. The user doesn't need to
 escape any regex meta character. This is used when you don't want to deal with regexes and only use
 plain text. E.g.: <code>BlockBegin: '{'</code></li>
@@ -403,7 +411,7 @@ from regex generation and want to understand the problem.</p>
 </ul>
 <p>The last point needs a more detailed explanation.
 It's best to show an example for such a situation.
-Say you have two terminals &quot;-&quot; and &quot;--&quot;, <em>minus</em> and <em>decrement</em>. The generated scanner is then
+Say you have two terminals "-" and "--", <em>minus</em> and <em>decrement</em>. The generated scanner is then
 based on the following regular expression:</p>
 <pre><code class="language-parol">    /-|--/
 </code></pre>
@@ -458,8 +466,8 @@ description. Only because of this rapid prototyping is possible.</p>
 <h3 id="the-default-scanner-state-initial"><a class="header" href="#the-default-scanner-state-initial">The Default scanner state INITIAL</a></h3>
 <p>INITIAL is the name of the default scanner state 0. Its behavior is defined with <code>ScannerDirectives</code>
 in the global <code>Declaration</code> section, such as:</p>
-<pre><code class="language-parol">%line_comment &quot;//&quot;
-%block_comment &quot;/\*&quot; &quot;\*/&quot;
+<pre><code class="language-parol">%line_comment "//"
+%block_comment "/\*" "\*/"
 </code></pre>
 <h3 id="introduce-new-scanner-states-with-the-scanner-directive"><a class="header" href="#introduce-new-scanner-states-with-the-scanner-directive">Introduce new scanner states with the %scanner directive</a></h3>
 <p>Use the <code>%scanner Name {...}</code> construct after the global <code>Declaration</code> section and before the <code>%%</code>
@@ -471,7 +479,7 @@ name of the state which is used to refer to it from scanner state lists at termi
 }
 
 %scanner Pragma {
-    %block_comment &quot;\{&quot; &quot;\}&quot;
+    %block_comment "\{" "\}"
 }
 </code></pre>
 <p>You can place any of the <code>ScannerDirectives</code> within the block that defines the scanner state.</p>
@@ -480,16 +488,16 @@ name of the state which is used to refer to it from scanner state lists at termi
 <p>Associate terminals with scanner states by prefixing them with a list of comma separated state names
 in angle brackets. Like this:</p>
 <pre><code class="language-parol">StringDelimiter
-    : &lt;String, INITIAL&gt;/&quot;/
+    : &lt;String, INITIAL&gt;/"/
     ;
 </code></pre>
 <p>Scanner state references in different occurrences of the same terminal are accumulated. I.e.,</p>
-<pre><code class="language-parol">&lt;State1&gt;&quot;term&quot;
+<pre><code class="language-parol">&lt;State1&gt;"term"
 ...
-&lt;State2&gt;&quot;term&quot;
+&lt;State2&gt;"term"
 </code></pre>
 <p>will result in</p>
-<pre><code class="language-parol">&lt;State1, State2&gt;&quot;term&quot;
+<pre><code class="language-parol">&lt;State1, State2&gt;"term"
 </code></pre>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
@@ -594,7 +602,7 @@ you want.</p>
 <pre><code class="language-parol">%user_type Number = crate::list_grammar::Number
 </code></pre>
 <p>Then use these aliases behind the colons.</p>
-<pre><code class="language-parol">Num: &quot;0|[1-9][0-9]*&quot;: Number;
+<pre><code class="language-parol">Num: "0|[1-9][0-9]*": Number;
 </code></pre>
 <h2 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h2>
 <p>Semantic actions are strictly separated from your grammar description.
@@ -607,8 +615,8 @@ In other words you put higher prioritized elements into sub-categories. Using th
 force the parser to branch into those first which leads to earlier evaluation in the end.</p>
 <p>Please have a look at this example:</p>
 <pre><code class="language-parol">%start Precedence
-%title &quot;Operator precedence&quot;
-%comment &quot;Shows the handling of operator precedence in `parol`&quot;
+%title "Operator precedence"
+%comment "Shows the handling of operator precedence in `parol`"
 
 %%
 
@@ -625,7 +633,7 @@ Plus    : '+'
         ;
 Minus   : '-'
         ;
-MulOp   : &quot;\*|/&quot;
+MulOp   : "\*|/"
         ;
 
 // ---------------------------------------------------------
@@ -657,7 +665,7 @@ Factor  : Literal
 <blockquote>
 <p>Hint: If the picture is too small please open it in a separate tab via context menu.</p>
 </blockquote>
-<p>Here you can see that the &quot;inner most&quot; operator is evaluated first by the parser, here the negation
+<p>Here you can see that the "inner most" operator is evaluated first by the parser, here the negation
 in production <code>Factor</code>.</p>
 <p>The <code>Multiplication</code> is the  second highest priority in our example. It is a sub-category of the
 <code>Summation</code>.</p>
@@ -677,15 +685,15 @@ Search for a <code>test.svg</code> file beside the <code>text.txt</code> file.</
 <p>I advice to use the parse tree generation feature when developing your grammar and to remove it
 again when putting your parser into production mode.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="operator-associativity"><a class="header" href="#operator-associativity">Operator associativity</a></h1>
-<p>Operator associativity describes the &quot;direction&quot; in which <em><strong>operators of the same precedence</strong></em> are
+<p>Operator associativity describes the "direction" in which <em><strong>operators of the same precedence</strong></em> are
 evaluated.</p>
 <h2 id="left-associativity"><a class="header" href="#left-associativity">Left associativity</a></h2>
 <p>First let's have a look at left associativity.</p>
 <p>We'll demonstrate this with a small example grammar that only supports multiplication which is left
 associative, i.e. <code>x * y * z</code> is evaluated as <code>(x * y) * z</code>.</p>
 <pre><code class="language-parol">%start LeftAssociativity
-%title &quot;Operator associativity&quot;
-%comment &quot;Shows the handling of operator associativity in `parol`&quot;
+%title "Operator associativity"
+%comment "Shows the handling of operator associativity in `parol`"
 
 %%
 
@@ -723,8 +731,8 @@ Also change the <code>test.txt</code> to the content</p>
 <blockquote>
 <p>Hint: If the picture is too small please open it in a separate tab via context menu.</p>
 </blockquote>
-<p>Now you would say &quot;Stop, this parse tree imposes right associativity! The expression is evaluated
-from right to left&quot;.</p>
+<p>Now you would say "Stop, this parse tree imposes right associativity! The expression is evaluated
+from right to left".</p>
 <p>This is right at the first glance but there is one thing you have to know about <code>parol</code>'s internals:</p>
 <p><em><strong>If you use <code>parol</code> with auto-generation mode (flag -g) all repetitive grammar constructs are
 provided as vectors in your AST types.</strong></em></p>
@@ -775,7 +783,7 @@ use std::fmt::{Debug, Display, Error, Formatter};
             .literal
             .text()
             .parse::&lt;u32&gt;()
-            .map_err(|e| parol!(&quot;'{}': {e}&quot;, literal.literal.text()))
+            .map_err(|e| parol!("'{}': {e}", literal.literal.text()))
     }
 
     fn process_operation(&amp;mut self) -&gt; Result&lt;()&gt; {
@@ -794,7 +802,7 @@ use std::fmt::{Debug, Display, Error, Formatter};
             )?;
             Ok(())
         } else {
-            bail!(&quot;No valid parse result!&quot;)
+            bail!("No valid parse result!")
         }
     }
 <span class="boring">}</span></code></pre></pre>
@@ -804,8 +812,8 @@ use std::fmt::{Debug, Display, Error, Formatter};
 </span>impl Display for LeftAssociativityGrammar&lt;'_&gt; {
     fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
         match &amp;self.left_associativity {
-            Some(_) =&gt; writeln!(f, &quot;{}&quot;, self.result),
-            None =&gt; write!(f, &quot;No parse result&quot;),
+            Some(_) =&gt; writeln!(f, "{}", self.result),
+            None =&gt; write!(f, "No parse result"),
         }
     }
 }
@@ -853,8 +861,8 @@ pub struct Multiplication&lt;'t&gt; {
 associative, i.e. <code>x ^ y ^ z</code> is evaluated as <code>x ^ (y ^ z)</code>. It becomes obvious if you look at this
 mathematical notation: \( {x^{y}}^{z} \)</p>
 <pre><code class="language-parol">%start RightAssociativity
-%title &quot;Operator associativity&quot;
-%comment &quot;Shows the handling of operator associativity in `parol`&quot;
+%title "Operator associativity"
+%comment "Shows the handling of operator associativity in `parol`"
 
 %%
 
@@ -918,7 +926,7 @@ made in our upper example. Thereby modify prefixes <code>Left</code> and <code>l
             self.result = last.pow(self.result);
             Ok(())
         } else {
-            bail!(&quot;No valid parse result!&quot;)
+            bail!("No valid parse result!")
         }
     }
 <span class="boring">}</span></code></pre></pre>
@@ -1058,17 +1066,17 @@ you want. Then use these aliases behind the colons.</p>
 <p>You may have look at example <a href="https://github.com/jsinger67/parol/blob/6800c3060bad0df033e55cf113cfd16e860a5373/examples/list_auto/list.par">list_auto</a>
 that demonstrates the handling of user types.</p>
 <pre><code class="language-parol">%start List
-%title &quot;A possibly empty comma separated list of integers&quot;
-%comment &quot;A trailing comma is allowed.&quot;
+%title "A possibly empty comma separated list of integers"
+%comment "A trailing comma is allowed."
 %user_type Number = crate::list_grammar::Number
 %user_type Numbers = crate::list_grammar::Numbers
 
 %%
 
 List: [Items: Numbers] TrailingComma^;
-Items: Num {&quot;,&quot;^ Num};
-Num: &quot;0|[1-9][0-9]*&quot;: Number;
-TrailingComma: [&quot;,&quot;^];
+Items: Num {","^ Num};
+Num: "0|[1-9][0-9]*": Number;
+TrailingComma: [","^];
 </code></pre>
 <p>In this example grammar the terminal in the production <code>Num</code> is assigned to the user type <code>Number</code>
 which in turn is a shorthand for <code>crate::list_grammar::Number</code>. Also the non-terminal <code>Items</code> is
@@ -1089,7 +1097,7 @@ expanded grammar <code>list-exp.par</code> which can be found in also generated 
     #[parol_runtime::function_name::named]
     fn list_opt_0(&amp;mut self, _items: &amp;ParseTreeType&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         let context = function_name!();
-        trace!(&quot;{}&quot;, self.trace_item_stack(context));
+        trace!("{}", self.trace_item_stack(context));
         let items = pop_item!(self, items, Items, context);
         let list_opt_0_built = ListOpt {
             items: (&amp;items)
@@ -1171,15 +1179,15 @@ and showed the vulnerability of the existing implementation to changes in the in
 actually shows how easy it is to work this way.</p>
 <p>We will elaborate this by implementing a list example in an alternative way.</p>
 <pre><code class="language-parol">%start List
-%title &quot;A possibly empty comma separated list of integers&quot;
-%comment &quot;A trailing comma is allowed.&quot;
+%title "A possibly empty comma separated list of integers"
+%comment "A trailing comma is allowed."
 
 %%
 
 List: Items TrailingComma^;
-Items: Num {&quot;,&quot;^ Num} | ;
-Num: &quot;0|[1-9][0-9]*&quot;;
-TrailingComma: [&quot;,&quot;^];
+Items: Num {","^ Num} | ;
+Num: "0|[1-9][0-9]*";
+TrailingComma: [","^];
 </code></pre>
 <p>Let's generate a new binary crate:</p>
 <p>You can try this grammar by calling</p>
@@ -1239,12 +1247,12 @@ impl Display for VanillaListGrammar {
     fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
         writeln!(
             f,
-            &quot;[{}]&quot;,
+            "[{}]",
             self.numbers
                 .iter()
-                .map(|e| format!(&quot;{}&quot;, e))
+                .map(|e| format!("{}", e))
                 .collect::&lt;Vec&lt;String&gt;&gt;()
-                .join(&quot;, &quot;)
+                .join(", ")
         )
     }
 }
@@ -1268,7 +1276,7 @@ but without any processing.</p>
 than we had to in the auto-generation mode.</p>
 <p>So open the generated file <code>vanilla_list-exp-par</code> and look for the production where a <code>Num</code> token
 is accepted:</p>
-<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
+<pre><code class="language-parol">/* 5 */ Num: "0|[1-9][0-9]*";
 </code></pre>
 <p>Then we need to implement the semantic action for exactly this production number 5. We find the
 trait function to implement in the file <code>src\vanilla_list_grammar_trait.rs</code> and copy it into the
@@ -1278,7 +1286,7 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
 </span>impl VanillaListGrammarTrait for VanillaListGrammar {
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
@@ -1290,13 +1298,13 @@ impl block at the end of the file <code>src\vanilla_list_grammar.rs</code>:</p>
 </span><span class="boring">fn main() {
 </span>    /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         let symbol = num.text()?;
         let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
+            .map_err(|e| parol!("num: Parse error: {e}"))?;
         self.push(number);
         Ok(())
     }
@@ -1336,7 +1344,7 @@ its functions have default implementations.</p>
 <li><a href="SemanticActions.html#semantic-actions-in-vanilla-mode">Vanilla mode</a></li>
 <li><a href="SemanticActions.html#semantic-actions-in-auto-generation-mode">Auto-gen mode</a></li>
 </ul>
-<p><img src="ParolModes.svg" alt="Parol's Modes" />Overview of the two modes</p>
+<p><img src="ParolModes.svg" alt="Parol&#39;s Modes" />Overview of the two modes</p>
 <h2 id="semantic-actions-in-vanilla-mode"><a class="header" href="#semantic-actions-in-vanilla-mode">Semantic actions in Vanilla mode</a></h2>
 <p>In the less comfortable vanilla mode there are some differences we will address next.</p>
 <p>The functions in the semantic actions trait correspond to the <em>productions</em> of the
@@ -1354,7 +1362,7 @@ from the previous chapter.</p>
 
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
@@ -1364,7 +1372,7 @@ from the previous chapter.</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>This is only the semantic action for production 5:</p>
-<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
+<pre><code class="language-parol">/* 5 */ Num: "0|[1-9][0-9]*";
 </code></pre>
 <p>The first thing you will notice is that the trait function has a default implementation. It does
 nothing but returning <code>Ok</code>.</p>
@@ -1379,13 +1387,13 @@ implementation.</p>
 </span>impl VanillaListGrammarTrait for VanillaListGrammar {
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         let symbol = num.text()?;
         let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
+            .map_err(|e| parol!("num: Parse error: {e}"))?;
         self.push(number);
         Ok(())
     }
@@ -1427,7 +1435,7 @@ pub enum ParseTreeType&lt;'t&gt; {
     pub fn token(&amp;self) -&gt; Result&lt;&amp;Token&lt;'t&gt;, ParserError&gt; {
         match self {
             Self::T(t) =&gt; Ok(t),
-            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
         }
     }
 
@@ -1438,7 +1446,7 @@ pub enum ParseTreeType&lt;'t&gt; {
     pub fn text(&amp;self) -&gt; Result&lt;&amp;str, ParserError&gt; {
         match self {
             Self::T(t) =&gt; Ok(t.text()),
-            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
         }
     }
 }
@@ -1515,7 +1523,7 @@ start symbol is the root node of each and every concrete parse tree we know, tha
 for it should comprise the complete input as the result of the parsing.</p>
 <p>The key to this is the structure of the generated type <code>Calc</code>. It resembles the structure of all
 productions belonging to the non-terminal `calc'. There is actually only one production for calc:</p>
-<pre><code class="language-parol">calc: { instruction &quot;;&quot;^ };
+<pre><code class="language-parol">calc: { instruction ";"^ };
 </code></pre>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -1527,7 +1535,7 @@ pub struct Calc&lt;'t&gt; {
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
-right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).</p>
+right-hand side of the production (<code>{ instruction ";"^ }</code>).</p>
 <p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
 <blockquote>
 <p>The reason why boxed types are needed is explained
@@ -1628,9 +1636,11 @@ dedicated scanner modes. Both variants are explained now.</p>
 </code></pre>
 <p>In this working example you explicitly restrict the portion that has to be repeated non-greedily by
 suppressing the acceptance of the following regex (the end of comment part) within the repetition.</p>
-<p>The above solution can be phrased like this:
-&gt;Match all characters except <code>*</code> OR a <code>*</code> NOT followed by the character <code>/</code>, where <code>*</code> is the start
+<p>The above solution can be phrased like this:</p>
+<blockquote>
+<p>Match all characters except <code>*</code> OR a <code>*</code> NOT followed by the character <code>/</code>, where <code>*</code> is the start
 of the end comment part and <code>/</code> is the next character after the start of the end comment part.</p>
+</blockquote>
 <p>I know that this is cumbersome and maybe sometimes not even feasible when the following part is too
 complex. Therefore there exist a second approach to cope with missing non-greediness.</p>
 <h4 id="scanner-modes"><a class="header" href="#scanner-modes">Scanner modes</a></h4>
@@ -1639,7 +1649,7 @@ complex. Therefore there exist a second approach to cope with missing non-greedi
 enters <code>INITIAL</code> mode on the <strong>comment end</strong> <code>\*/</code> again.</p>
 <pre><code class="language-parol">
 %start NgBlockComment
-%comment &quot;Non-greedy block comment&quot;
+%comment "Non-greedy block comment"
 
 %on CommentStart %enter COMMENT
 
@@ -1690,7 +1700,7 @@ If parser generation is expensive for your grammar, what indeed can be the case,
 the generated parser and the user trait under source control.</p>
 <p>The next thing you should understand is that you should design your grammar to be LL(k) with k as
 minimal as possible. I know, this can be hard but will pay out in the end.</p>
-<p>Also try to optimize your grammar for the goal &quot;Minimal number of productions&quot;. This can be often
+<p>Also try to optimize your grammar for the goal "Minimal number of productions". This can be often
 broken down to these constraints:</p>
 <ul>
 <li>Avoid productions that only rename a non-terminal, i.e. the ones in the form
@@ -1774,17 +1784,17 @@ thoroughly.</li>
 </ul>
 <p>In all projects that were generated with <code>parol new</code> the env_logger is built in. First activate all
 traces. I'll show the principle in powershell because this will work on Windows as well as on Linux</p>
-<pre><code class="language-powershell">$env:RUST_LOG=&quot;trace&quot;
+<pre><code class="language-powershell">$env:RUST_LOG="trace"
 </code></pre>
 <p>Then run your scenario and examine the output. If necessary restrict the traces further by tweaking
 the RUST_LOG variable, e.g. for parser and scanner internals use this:</p>
-<pre><code class="language-powershell">$env:RUST_LOG=&quot;parol_runtime=trace&quot;
+<pre><code class="language-powershell">$env:RUST_LOG="parol_runtime=trace"
 # or
-$env:RUST_LOG=&quot;parol_runtime::lexer=trace&quot;
+$env:RUST_LOG="parol_runtime::lexer=trace"
 # or
-$env:RUST_LOG=&quot;parol_runtime::parser=trace&quot;
+$env:RUST_LOG="parol_runtime::parser=trace"
 # or
-$env:RUST_LOG=&quot;parol_runtime::lr_parser=trace&quot;
+$env:RUST_LOG="parol_runtime::lr_parser=trace"
 </code></pre>
 <ul>
 <li>Examine the traces from the beginning to pin down the first occurrence of the problem</li>

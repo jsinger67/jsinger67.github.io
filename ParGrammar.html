@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,10 +7,10 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -32,15 +32,17 @@
 
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -62,43 +64,49 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
             var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html" class="active"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="ParolVersion2.html"><strong aria-hidden="true">10.</strong> Changes in version 2</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">11.</strong> Useful tips</a></li><li class="chapter-item expanded "><a href="QnA.html"><strong aria-hidden="true">12.</strong> Q&A</a></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -154,8 +162,8 @@ comments.</p>
 <p>Using the <code>%line_comment</code> and <code>%block_comment</code> constructs you can easily define your language's
 comments. For example you can define comments like it's done in the calc example
 <code>calc.par</code>:</p>
-<pre><code class="language-parol">%line_comment &quot;//&quot;
-%block_comment  &quot;/\*&quot; &quot;\*/&quot;
+<pre><code class="language-parol">%line_comment "//"
+%block_comment  "/\*" "\*/"
 </code></pre>
 <p>You can supply more than one of these two comment declarations. They will all be considered as valid
 comments.</p>
@@ -185,7 +193,7 @@ description.</p>
 <p>The support of the new grammar type is still in a phase of improvement. If there are any obstacles
 here, you can be sure that they will be soon got out of the way.</p>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
-<p>Non-terminals are treated case sensitive, i. e. &quot;list&quot; and &quot;List&quot; are different symbols. But it is
+<p>Non-terminals are treated case sensitive, i. e. "list" and "List" are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
 style on casing in your description.</p>
 <h2 id="sections"><a class="header" href="#sections">Sections</a></h2>
@@ -215,18 +223,18 @@ directive.
 With this you have to handle whitespace tokens on your own in your grammar.</p>
 <h3 id="terminal-name-generation"><a class="header" href="#terminal-name-generation">Terminal name generation</a></h3>
 <p>The names of the terminals are deduced from the content of the terminal itself. For instance, for a
-terminal &quot;:=&quot; it creates the terminal name &quot;ColonEqu&quot;, see generated parser for Oberon-0. If you
+terminal ":=" it creates the terminal name "ColonEqu", see generated parser for Oberon-0. If you
 want this name to be more expressive, you can dedicate a separate production to the terminal, lets
 say:</p>
-<pre><code class="language-parol">Assign: &quot;:=&quot;;
+<pre><code class="language-parol">Assign: ":=";
 </code></pre>
-<p>With this trick you define a so called &quot;primary non-terminal for a terminal&quot; (I coined it this way)
-that instructs the name generation to name the terminal &quot;Assign&quot;.</p>
+<p>With this trick you define a so called "primary non-terminal for a terminal" (I coined it this way)
+that instructs the name generation to name the terminal "Assign".</p>
 <h3 id="terminal-representation"><a class="header" href="#terminal-representation">Terminal representation</a></h3>
 <p>As of version 0.14.0 <code>parol</code> supports three different styles of terminal representations, all of
 them being valid and allowed.</p>
 <ul>
-<li>The legacy syntax (<code>&quot;...&quot;</code>). These terminals are treated as if they were regular expressions.</li>
+<li>The legacy syntax (<code>"..."</code>). These terminals are treated as if they were regular expressions.</li>
 <li>New single quoted string literals (<code>'..'</code>) are literal or raw strings. The user doesn't need to
 escape any regex meta character. This is used when you don't want to deal with regexes and only use
 plain text. E.g.: <code>BlockBegin: '{'</code></li>
@@ -245,7 +253,7 @@ from regex generation and want to understand the problem.</p>
 </ul>
 <p>The last point needs a more detailed explanation.
 It's best to show an example for such a situation.
-Say you have two terminals &quot;-&quot; and &quot;--&quot;, <em>minus</em> and <em>decrement</em>. The generated scanner is then
+Say you have two terminals "-" and "--", <em>minus</em> and <em>decrement</em>. The generated scanner is then
 based on the following regular expression:</p>
 <pre><code class="language-parol">    /-|--/
 </code></pre>
@@ -300,8 +308,8 @@ description. Only because of this rapid prototyping is possible.</p>
 <h3 id="the-default-scanner-state-initial"><a class="header" href="#the-default-scanner-state-initial">The Default scanner state INITIAL</a></h3>
 <p>INITIAL is the name of the default scanner state 0. Its behavior is defined with <code>ScannerDirectives</code>
 in the global <code>Declaration</code> section, such as:</p>
-<pre><code class="language-parol">%line_comment &quot;//&quot;
-%block_comment &quot;/\*&quot; &quot;\*/&quot;
+<pre><code class="language-parol">%line_comment "//"
+%block_comment "/\*" "\*/"
 </code></pre>
 <h3 id="introduce-new-scanner-states-with-the-scanner-directive"><a class="header" href="#introduce-new-scanner-states-with-the-scanner-directive">Introduce new scanner states with the %scanner directive</a></h3>
 <p>Use the <code>%scanner Name {...}</code> construct after the global <code>Declaration</code> section and before the <code>%%</code>
@@ -313,7 +321,7 @@ name of the state which is used to refer to it from scanner state lists at termi
 }
 
 %scanner Pragma {
-    %block_comment &quot;\{&quot; &quot;\}&quot;
+    %block_comment "\{" "\}"
 }
 </code></pre>
 <p>You can place any of the <code>ScannerDirectives</code> within the block that defines the scanner state.</p>
@@ -322,16 +330,16 @@ name of the state which is used to refer to it from scanner state lists at termi
 <p>Associate terminals with scanner states by prefixing them with a list of comma separated state names
 in angle brackets. Like this:</p>
 <pre><code class="language-parol">StringDelimiter
-    : &lt;String, INITIAL&gt;/&quot;/
+    : &lt;String, INITIAL&gt;/"/
     ;
 </code></pre>
 <p>Scanner state references in different occurrences of the same terminal are accumulated. I.e.,</p>
-<pre><code class="language-parol">&lt;State1&gt;&quot;term&quot;
+<pre><code class="language-parol">&lt;State1&gt;"term"
 ...
-&lt;State2&gt;&quot;term&quot;
+&lt;State2&gt;"term"
 </code></pre>
 <p>will result in</p>
-<pre><code class="language-parol">&lt;State1, State2&gt;&quot;term&quot;
+<pre><code class="language-parol">&lt;State1, State2&gt;"term"
 </code></pre>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
@@ -436,7 +444,7 @@ you want.</p>
 <pre><code class="language-parol">%user_type Number = crate::list_grammar::Number
 </code></pre>
 <p>Then use these aliases behind the colons.</p>
-<pre><code class="language-parol">Num: &quot;0|[1-9][0-9]*&quot;: Number;
+<pre><code class="language-parol">Num: "0|[1-9][0-9]*": Number;
 </code></pre>
 <h2 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h2>
 <p>Semantic actions are strictly separated from your grammar description.
@@ -452,7 +460,7 @@ those productions you are interested in.</p>
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="OperatorPrecedence.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="OperatorPrecedence.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -466,7 +474,7 @@ those productions you are interested in.</p>
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="OperatorPrecedence.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="OperatorPrecedence.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>

@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en" class="sidebar-visible no-js light">
+<html lang="en" class="light sidebar-visible" dir="ltr">
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
@@ -7,10 +7,10 @@
 
 
         <!-- Custom HTML head -->
-        
+
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="#ffffff" />
+        <meta name="theme-color" content="#ffffff">
 
         <link rel="icon" href="favicon.svg">
         <link rel="shortcut icon" href="favicon.png">
@@ -32,15 +32,17 @@
 
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    </head>
-    <body>
-    <div id="body-container">
+
         <!-- Provide site root to javascript -->
         <script>
             var path_to_root = "";
             var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
         </script>
-
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
@@ -62,43 +64,49 @@
             var theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
-            var html = document.querySelector('html');
-            html.classList.remove('no-js')
+            const html = document.documentElement;
             html.classList.remove('light')
             html.classList.add(theme);
-            html.classList.add('js');
+            html.classList.add("js");
         </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var html = document.querySelector('html');
             var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
             }
+            sidebar_toggle.checked = sidebar === 'visible';
             html.classList.remove('sidebar-visible');
             html.classList.add("sidebar-" + sidebar);
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
-            <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="Introduction.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="History.html"><strong aria-hidden="true">2.</strong> History</a></li><li class="chapter-item expanded "><a href="GettingStarted.html"><strong aria-hidden="true">3.</strong> Getting started</a></li><li class="chapter-item expanded "><a href="ParGrammar.html"><strong aria-hidden="true">4.</strong> Grammar description syntax</a></li><li class="chapter-item expanded "><a href="OperatorPrecedence.html"><strong aria-hidden="true">5.</strong> Operator precedence</a></li><li class="chapter-item expanded "><a href="OperatorAssociativity.html"><strong aria-hidden="true">6.</strong> Operator associativity</a></li><li class="chapter-item expanded "><a href="AstGeneration.html"><strong aria-hidden="true">7.</strong> AST generation</a></li><li class="chapter-item expanded "><a href="VanillaMode.html"><strong aria-hidden="true">8.</strong> Vanilla mode</a></li><li class="chapter-item expanded "><a href="SemanticActions.html" class="active"><strong aria-hidden="true">9.</strong> Semantic actions</a></li><li class="chapter-item expanded "><a href="ParolVersion2.html"><strong aria-hidden="true">10.</strong> Changes in version 2</a></li><li class="chapter-item expanded "><a href="UsefulTips.html"><strong aria-hidden="true">11.</strong> Useful tips</a></li><li class="chapter-item expanded "><a href="QnA.html"><strong aria-hidden="true">12.</strong> Q&A</a></li></ol>
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
             </div>
-            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
 
         <div id="page-wrapper" class="page-wrapper">
 
             <div class="page">
-                                <div id="menu-bar-hover-placeholder"></div>
-                <div id="menu-bar" class="menu-bar sticky bordered">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
                     <div class="left-buttons">
-                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
                             <i class="fa fa-bars"></i>
-                        </button>
+                        </label>
                         <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
                             <i class="fa fa-paint-brush"></i>
                         </button>
@@ -169,7 +177,7 @@ its functions have default implementations.</p>
 <li><a href="SemanticActions.html#semantic-actions-in-vanilla-mode">Vanilla mode</a></li>
 <li><a href="SemanticActions.html#semantic-actions-in-auto-generation-mode">Auto-gen mode</a></li>
 </ul>
-<p><img src="ParolModes.svg" alt="Parol's Modes" />Overview of the two modes</p>
+<p><img src="ParolModes.svg" alt="Parol&#39;s Modes" />Overview of the two modes</p>
 <h2 id="semantic-actions-in-vanilla-mode"><a class="header" href="#semantic-actions-in-vanilla-mode">Semantic actions in Vanilla mode</a></h2>
 <p>In the less comfortable vanilla mode there are some differences we will address next.</p>
 <p>The functions in the semantic actions trait correspond to the <em>productions</em> of the
@@ -187,7 +195,7 @@ from the previous chapter.</p>
 
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         Ok(())
@@ -197,7 +205,7 @@ from the previous chapter.</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>This is only the semantic action for production 5:</p>
-<pre><code class="language-parol">/* 5 */ Num: &quot;0|[1-9][0-9]*&quot;;
+<pre><code class="language-parol">/* 5 */ Num: "0|[1-9][0-9]*";
 </code></pre>
 <p>The first thing you will notice is that the trait function has a default implementation. It does
 nothing but returning <code>Ok</code>.</p>
@@ -212,13 +220,13 @@ implementation.</p>
 </span>impl VanillaListGrammarTrait for VanillaListGrammar {
     /// Semantic action for production 5:
     ///
-    /// Num: &quot;0|[1-9][0-9]*&quot;;
+    /// Num: "0|[1-9][0-9]*";
     ///
     fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
         let symbol = num.text()?;
         let number = symbol
             .parse::&lt;DefinitionRange&gt;()
-            .map_err(|e| parol!(&quot;num: Parse error: {e}&quot;))?;
+            .map_err(|e| parol!("num: Parse error: {e}"))?;
         self.push(number);
         Ok(())
     }
@@ -260,7 +268,7 @@ pub enum ParseTreeType&lt;'t&gt; {
     pub fn token(&amp;self) -&gt; Result&lt;&amp;Token&lt;'t&gt;, ParserError&gt; {
         match self {
             Self::T(t) =&gt; Ok(t),
-            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
         }
     }
 
@@ -271,7 +279,7 @@ pub enum ParseTreeType&lt;'t&gt; {
     pub fn text(&amp;self) -&gt; Result&lt;&amp;str, ParserError&gt; {
         match self {
             Self::T(t) =&gt; Ok(t.text()),
-            _ =&gt; Err(ParserError::InternalError(format!(&quot;{} is no token!&quot;, self))),
+            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
         }
     }
 }
@@ -348,7 +356,7 @@ start symbol is the root node of each and every concrete parse tree we know, tha
 for it should comprise the complete input as the result of the parsing.</p>
 <p>The key to this is the structure of the generated type <code>Calc</code>. It resembles the structure of all
 productions belonging to the non-terminal `calc'. There is actually only one production for calc:</p>
-<pre><code class="language-parol">calc: { instruction &quot;;&quot;^ };
+<pre><code class="language-parol">calc: { instruction ";"^ };
 </code></pre>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -360,7 +368,7 @@ pub struct Calc&lt;'t&gt; {
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
-right-hand side of the production (<code>{ instruction &quot;;&quot;^ }</code>).</p>
+right-hand side of the production (<code>{ instruction ";"^ }</code>).</p>
 <p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
 <blockquote>
 <p>The reason why boxed types are needed is explained
@@ -412,7 +420,7 @@ I recommend to study this example more deeply and the approach will become obvio
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next" href="ParolVersion2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="ParolVersion2.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -426,7 +434,7 @@ I recommend to study this example more deeply and the approach will become obvio
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next" href="ParolVersion2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="ParolVersion2.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
