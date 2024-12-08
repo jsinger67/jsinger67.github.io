@@ -196,10 +196,10 @@ example.</p>
 <p>Let's use the commonly known block comment as our example.</p>
 <p>In version 1 you would have simply used a non-greedy repetition to skip over all characters in
 between the start of the comment and the end of the comment.</p>
-<pre><code class="language-regex">/\*[.\r\n]*?\*/
+<pre><code class="language-regexp">/\*[.\r\n]*?\*/
 </code></pre>
-<p>or even using s flag, which allows <code>.</code> to match <code>\n</code> too:</p>
-<pre><code class="language-regex">/\*(?s).*?\*/
+<p>or even using <code>s</code> flag, which allows <code>.</code> to match <code>\n</code> too:</p>
+<pre><code class="language-regexp">/\*(?s).*?\*/
 </code></pre>
 <p>In version 2 with <code>scnr</code> you can not use either of these two versions. <code>scnr</code> does not support
 non-greediness and does also not support flags currently. In this regard it is in good company with
@@ -208,7 +208,7 @@ other lexer/scanner generators like Lex.</p>
 dedicated scanner modes. Both variants are explained now.</p>
 <h4 id="special-regex-design"><a class="header" href="#special-regex-design">Special regex design</a></h4>
 <p>You can consider the following solution</p>
-<pre><code class="language-regex">/\*([^*]|\*[^/])*\*/
+<pre><code class="language-regexp">/\*([^*]|\*[^/])*\*/
 </code></pre>
 <p>In this working example you explicitly restrict the portion that has to be repeated non-greedily by
 suppressing the acceptance of the following regex (the end of comment part) within the repetition.</p>
@@ -240,22 +240,21 @@ enters <code>INITIAL</code> mode on the <strong>comment end</strong> <code>\*/</
 NgBlockComment: Comments;
 Comments: { Comment };
 Comment: CommentStart { CommentContent } CommentEnd;
-CommentStart: '/*';                 // This token is only valid in mode INITIAL
-CommentEnd: &lt;COMMENT&gt;'*/';          // This token is only valid in mode COMMENT
-CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // This token is only valid in mode COMMENT
+CommentStart: '/*';                 // Valid in mode INITIAL
+CommentEnd: &lt;COMMENT&gt;'*/';          // Valid in mode COMMENT
+CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // Valid in mode COMMENT
 </code></pre>
+<p>The <code>CommentEnd</code> terminal has precedence over <code>CommentContent</code> simply by preceding it in the
+grammar description. This way it can't be 'eaten up' by the <code>CommentContent</code> terminal.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="SemanticActions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="QnA.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="UsefulTips.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -263,13 +262,10 @@ CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // This token is only valid in mode CO
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="SemanticActions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="QnA.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="UsefulTips.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>

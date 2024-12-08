@@ -255,7 +255,7 @@ from regex generation and want to understand the problem.</p>
 It's best to show an example for such a situation.
 Say you have two terminals "-" and "--", <em>minus</em> and <em>decrement</em>. The generated scanner is then
 based on the following regular expression:</p>
-<pre><code class="language-parol">    /-|--/
+<pre><code class="language-regexp">/-|--/
 </code></pre>
 <p>The Rust regex will now match two times <em>minus</em> when actually a <em>decrement</em> operator should be
 detected.
@@ -263,7 +263,7 @@ It behaves here differently than a classic scanner/lexer like Lex that obeys the
 strategy.</p>
 <p>Fortunately there is a simple way to achieve what we want. We just need a resulting regular
 expression with a different order:</p>
-<pre><code class="language-parol">    /--|-/
+<pre><code class="language-regexp">/--|-/
 </code></pre>
 <p>This will perfectly do the job.</p>
 <p>To get such an order the <em>decrement</em> terminal has to be defined <strong>before</strong> the <em>minus</em> terminal as

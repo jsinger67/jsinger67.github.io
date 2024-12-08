@@ -413,7 +413,7 @@ from regex generation and want to understand the problem.</p>
 It's best to show an example for such a situation.
 Say you have two terminals "-" and "--", <em>minus</em> and <em>decrement</em>. The generated scanner is then
 based on the following regular expression:</p>
-<pre><code class="language-parol">    /-|--/
+<pre><code class="language-regexp">/-|--/
 </code></pre>
 <p>The Rust regex will now match two times <em>minus</em> when actually a <em>decrement</em> operator should be
 detected.
@@ -421,7 +421,7 @@ It behaves here differently than a classic scanner/lexer like Lex that obeys the
 strategy.</p>
 <p>Fortunately there is a simple way to achieve what we want. We just need a resulting regular
 expression with a different order:</p>
-<pre><code class="language-parol">    /--|-/
+<pre><code class="language-regexp">/--|-/
 </code></pre>
 <p>This will perfectly do the job.</p>
 <p>To get such an order the <em>decrement</em> terminal has to be defined <strong>before</strong> the <em>minus</em> terminal as
@@ -1578,96 +1578,6 @@ that belongs to the grammar defined by
 I recommend to study this example more deeply and the approach will become obvious to you.</p>
 <p>As mentioned earlier the implementation can be found here:
 <a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="changes-in-version-2"><a class="header" href="#changes-in-version-2">Changes in version 2</a></h1>
-<h2 id="new-scannerlexer-crate"><a class="header" href="#new-scannerlexer-crate">New scanner/lexer crate</a></h2>
-<p>As of version 2.0 <code>parol</code> uses the brand new and self written scanner crate
-<a href="https://github.com/jsinger67/scnr">scrn</a>.</p>
-<h3 id="motivation"><a class="header" href="#motivation">Motivation</a></h3>
-<p>The motivation for switching from <code>regex-automata</code> to <code>scnr</code> was the performance of the creation of
-tokenizers out of regexes during the startup of generated parsers. For small input texts this share
-of the parser runtime exceeded the share of actual parsing times by a factor of &gt;30. This meant that
-for the advantage of fast parsing you had to sacrifice a lot of costs for building this efficient
-scanner.</p>
-<p>This doesn't mean that <code>regex-automata</code> is in any way bad, on the contrary, it is a very versatile
-and valuable crate for a multitude of uses cases. It only means that the use in a lexical scanner,
-where you don't need the majority of features like named and unnamed capture groups is not the
-optimal decision.</p>
-<p>Also <code>scnr</code> is not perfect and can't compete with <code>regex-automata</code> regarding the supported regex
-features. But being able and willing to forgo some comfort opens up the opportunity to gain a lot of
-speed in the phase of tokenizer creation and even during the actual scanning.</p>
-<p>I can give some figures to support the claims made:</p>
-<p>First for the speed of building the scanner resp. the tokenizer:</p>
-<div class="table-wrapper"><table><thead><tr><th>118 terminals</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
-<tr><td>build scanner</td><td style="text-align: right">33ms</td><td style="text-align: right">1ms</td></tr>
-</tbody></table>
-</div>
-<p>In both cases the same conditions are applied. The regex comprised 118 terminals.</p>
-<p>Then some measurements of parsing speed.</p>
-<div class="table-wrapper"><table><thead><tr><th>Input (Bytes, Tokens)</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
-<tr><td>549, 175</td><td style="text-align: right">0.01ms + 33ms</td><td style="text-align: right">1.2ms + 1ms</td></tr>
-<tr><td>58525, 3111</td><td style="text-align: right">0.76ms + 33ms</td><td style="text-align: right">2.34ms + 1 ms</td></tr>
-<tr><td>5873100, 1159200</td><td style="text-align: right">122ms + 33ms</td><td style="text-align: right">80ms + 1ms</td></tr>
-</tbody></table>
-</div>
-<p>The added value in cells with times is the constant time to create the tokenizer, which is required
-once for each call to the generated parser.</p>
-<p>As you can see, <code>scnr</code> does its job well.</p>
-<h3 id="impact-on-lexical-analysis"><a class="header" href="#impact-on-lexical-analysis">Impact on lexical analysis</a></h3>
-<p>Since <code>scnr</code> doesn't support some regex feature which are either complicated, costly or unnecessary,
-some things can't be resolved simply by the means regex crates like <code>regex-automata</code> provide.
-One major feature worth mentioning is non-greediness. Lets dive in this topic with the help of an
-example.</p>
-<p>Let's use the commonly known block comment as our example.</p>
-<p>In version 1 you would have simply used a non-greedy repetition to skip over all characters in
-between the start of the comment and the end of the comment.</p>
-<pre><code class="language-regex">/\*[.\r\n]*?\*/
-</code></pre>
-<p>or even using s flag, which allows <code>.</code> to match <code>\n</code> too:</p>
-<pre><code class="language-regex">/\*(?s).*?\*/
-</code></pre>
-<p>In version 2 with <code>scnr</code> you can not use either of these two versions. <code>scnr</code> does not support
-non-greediness and does also not support flags currently. In this regard it is in good company with
-other lexer/scanner generators like Lex.</p>
-<p>You can although simulate non-greediness by carefully creating your regex or by introducing new
-dedicated scanner modes. Both variants are explained now.</p>
-<h4 id="special-regex-design"><a class="header" href="#special-regex-design">Special regex design</a></h4>
-<p>You can consider the following solution</p>
-<pre><code class="language-regex">/\*([^*]|\*[^/])*\*/
-</code></pre>
-<p>In this working example you explicitly restrict the portion that has to be repeated non-greedily by
-suppressing the acceptance of the following regex (the end of comment part) within the repetition.</p>
-<p>The above solution can be phrased like this:</p>
-<blockquote>
-<p>Match all characters except <code>*</code> OR a <code>*</code> NOT followed by the character <code>/</code>, where <code>*</code> is the start
-of the end comment part and <code>/</code> is the next character after the start of the end comment part.</p>
-</blockquote>
-<p>I know that this is cumbersome and maybe sometimes not even feasible when the following part is too
-complex. Therefore there exist a second approach to cope with missing non-greediness.</p>
-<h4 id="scanner-modes"><a class="header" href="#scanner-modes">Scanner modes</a></h4>
-<p>You can make the repetition also non-greedy by creating a second scanner mode, here named <code>COMMENT</code>.</p>
-<p>This mode is entered on the <strong>comment start</strong> <code>/\*</code>, then handles all tokens inside a comment and
-enters <code>INITIAL</code> mode on the <strong>comment end</strong> <code>\*/</code> again.</p>
-<pre><code class="language-parol">
-%start NgBlockComment
-%comment "Non-greedy block comment"
-
-%on CommentStart %enter COMMENT
-
-%scanner COMMENT {
-    %auto_newline_off
-    %auto_ws_off
-    %on CommentEnd %enter INITIAL
-}
-
-%%
-
-NgBlockComment: Comments;
-Comments: { Comment };
-Comment: CommentStart { CommentContent } CommentEnd;
-CommentStart: '/*';                 // This token is only valid in mode INITIAL
-CommentEnd: &lt;COMMENT&gt;'*/';          // This token is only valid in mode COMMENT
-CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // This token is only valid in mode COMMENT
-</code></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="useful-tips"><a class="header" href="#useful-tips">Useful tips</a></h1>
 <h2 id="build-performance"><a class="header" href="#build-performance">Build performance</a></h2>
 <p>To get an optimized build performance when using <code>parol</code>'s
@@ -1828,6 +1738,98 @@ in the generated parser</li>
 sides of your productions are decreased. Therefore examine the productions that correlate to the
 functions where the warnings occur. Then consider to factor out parts of the RHS into separate
 productions.</p>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="changes-in-version-2"><a class="header" href="#changes-in-version-2">Changes in version 2</a></h1>
+<h2 id="new-scannerlexer-crate"><a class="header" href="#new-scannerlexer-crate">New scanner/lexer crate</a></h2>
+<p>As of version 2.0 <code>parol</code> uses the brand new and self written scanner crate
+<a href="https://github.com/jsinger67/scnr">scrn</a>.</p>
+<h3 id="motivation"><a class="header" href="#motivation">Motivation</a></h3>
+<p>The motivation for switching from <code>regex-automata</code> to <code>scnr</code> was the performance of the creation of
+tokenizers out of regexes during the startup of generated parsers. For small input texts this share
+of the parser runtime exceeded the share of actual parsing times by a factor of &gt;30. This meant that
+for the advantage of fast parsing you had to sacrifice a lot of costs for building this efficient
+scanner.</p>
+<p>This doesn't mean that <code>regex-automata</code> is in any way bad, on the contrary, it is a very versatile
+and valuable crate for a multitude of uses cases. It only means that the use in a lexical scanner,
+where you don't need the majority of features like named and unnamed capture groups is not the
+optimal decision.</p>
+<p>Also <code>scnr</code> is not perfect and can't compete with <code>regex-automata</code> regarding the supported regex
+features. But being able and willing to forgo some comfort opens up the opportunity to gain a lot of
+speed in the phase of tokenizer creation and even during the actual scanning.</p>
+<p>I can give some figures to support the claims made:</p>
+<p>First for the speed of building the scanner resp. the tokenizer:</p>
+<div class="table-wrapper"><table><thead><tr><th>118 terminals</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
+<tr><td>build scanner</td><td style="text-align: right">33ms</td><td style="text-align: right">1ms</td></tr>
+</tbody></table>
+</div>
+<p>In both cases the same conditions are applied. The regex comprised 118 terminals.</p>
+<p>Then some measurements of parsing speed.</p>
+<div class="table-wrapper"><table><thead><tr><th>Input (Bytes, Tokens)</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
+<tr><td>549, 175</td><td style="text-align: right">0.01ms + 33ms</td><td style="text-align: right">1.2ms + 1ms</td></tr>
+<tr><td>58525, 3111</td><td style="text-align: right">0.76ms + 33ms</td><td style="text-align: right">2.34ms + 1 ms</td></tr>
+<tr><td>5873100, 1159200</td><td style="text-align: right">122ms + 33ms</td><td style="text-align: right">80ms + 1ms</td></tr>
+</tbody></table>
+</div>
+<p>The added value in cells with times is the constant time to create the tokenizer, which is required
+once for each call to the generated parser.</p>
+<p>As you can see, <code>scnr</code> does its job well.</p>
+<h3 id="impact-on-lexical-analysis"><a class="header" href="#impact-on-lexical-analysis">Impact on lexical analysis</a></h3>
+<p>Since <code>scnr</code> doesn't support some regex feature which are either complicated, costly or unnecessary,
+some things can't be resolved simply by the means regex crates like <code>regex-automata</code> provide.
+One major feature worth mentioning is non-greediness. Lets dive in this topic with the help of an
+example.</p>
+<p>Let's use the commonly known block comment as our example.</p>
+<p>In version 1 you would have simply used a non-greedy repetition to skip over all characters in
+between the start of the comment and the end of the comment.</p>
+<pre><code class="language-regexp">/\*[.\r\n]*?\*/
+</code></pre>
+<p>or even using <code>s</code> flag, which allows <code>.</code> to match <code>\n</code> too:</p>
+<pre><code class="language-regexp">/\*(?s).*?\*/
+</code></pre>
+<p>In version 2 with <code>scnr</code> you can not use either of these two versions. <code>scnr</code> does not support
+non-greediness and does also not support flags currently. In this regard it is in good company with
+other lexer/scanner generators like Lex.</p>
+<p>You can although simulate non-greediness by carefully creating your regex or by introducing new
+dedicated scanner modes. Both variants are explained now.</p>
+<h4 id="special-regex-design"><a class="header" href="#special-regex-design">Special regex design</a></h4>
+<p>You can consider the following solution</p>
+<pre><code class="language-regexp">/\*([^*]|\*[^/])*\*/
+</code></pre>
+<p>In this working example you explicitly restrict the portion that has to be repeated non-greedily by
+suppressing the acceptance of the following regex (the end of comment part) within the repetition.</p>
+<p>The above solution can be phrased like this:</p>
+<blockquote>
+<p>Match all characters except <code>*</code> OR a <code>*</code> NOT followed by the character <code>/</code>, where <code>*</code> is the start
+of the end comment part and <code>/</code> is the next character after the start of the end comment part.</p>
+</blockquote>
+<p>I know that this is cumbersome and maybe sometimes not even feasible when the following part is too
+complex. Therefore there exist a second approach to cope with missing non-greediness.</p>
+<h4 id="scanner-modes"><a class="header" href="#scanner-modes">Scanner modes</a></h4>
+<p>You can make the repetition also non-greedy by creating a second scanner mode, here named <code>COMMENT</code>.</p>
+<p>This mode is entered on the <strong>comment start</strong> <code>/\*</code>, then handles all tokens inside a comment and
+enters <code>INITIAL</code> mode on the <strong>comment end</strong> <code>\*/</code> again.</p>
+<pre><code class="language-parol">
+%start NgBlockComment
+%comment "Non-greedy block comment"
+
+%on CommentStart %enter COMMENT
+
+%scanner COMMENT {
+    %auto_newline_off
+    %auto_ws_off
+    %on CommentEnd %enter INITIAL
+}
+
+%%
+
+NgBlockComment: Comments;
+Comments: { Comment };
+Comment: CommentStart { CommentContent } CommentEnd;
+CommentStart: '/*';                 // Valid in mode INITIAL
+CommentEnd: &lt;COMMENT&gt;'*/';          // Valid in mode COMMENT
+CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // Valid in mode COMMENT
+</code></pre>
+<p>The <code>CommentEnd</code> terminal has precedence over <code>CommentContent</code> simply by preceding it in the
+grammar description. This way it can't be 'eaten up' by the <code>CommentContent</code> terminal.</p>
 
                     </main>
 
