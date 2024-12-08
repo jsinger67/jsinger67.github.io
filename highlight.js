@@ -5483,7 +5483,7 @@ hljs.registerLanguage(
     "use strict";
     var i = /[a-zA-Z_][a-zA-Z0-9_]*/,
       s = { className: "variable", begin: i },
-      o = { className: "number", begin: /%%|\||:|;|\^|=/, },
+      o = { className: "operator", begin: /%%|\||:|;|\^|=|?=|?!/, },
       p = { className: "meta", begin: /\(|\)|\{|\}|\[|\]/, };
     return function (e) {
       return {
