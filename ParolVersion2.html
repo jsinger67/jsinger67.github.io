@@ -218,7 +218,7 @@ suppressing the acceptance of the following regex (the end of comment part) with
 of the end comment part and <code>/</code> is the next character after the start of the end comment part.</p>
 </blockquote>
 <p>I know that this is cumbersome and maybe sometimes not even feasible when the following part is too
-complex. Therefore there exist a second approach to cope with missing non-greediness.</p>
+complex. Therefore there exists a second approach to cope with missing non-greediness.</p>
 <h4 id="scanner-modes"><a class="header" href="#scanner-modes">Scanner modes</a></h4>
 <p>You can make the repetition also non-greedy by creating a second scanner mode, here named <code>COMMENT</code>.</p>
 <p>This mode is entered on the <strong>comment start</strong> <code>/\*</code>, then handles all tokens inside a comment and
