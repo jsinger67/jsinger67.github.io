@@ -1748,7 +1748,7 @@ tokenizers out of regexes during the startup of generated parsers. For small inp
 of the parser runtime exceeded the share of actual parsing times by a factor of &gt;30. This meant that
 for the advantage of fast parsing you had to sacrifice a lot of costs for building this efficient
 scanner.</p>
-<p>This doesn't mean that <code>regex-automata</code> is in any way bad, on the contrary, it is a very versatile
+<p>This doesn't mean that <code>regex-automata</code> is in any way poor, on the contrary, it is a very versatile
 and valuable crate for a multitude of uses cases. It only means that the use in a lexical scanner,
 where you don't need the majority of features like named and unnamed capture groups is not the
 optimal decision.</p>
@@ -1763,10 +1763,10 @@ speed in the phase of tokenizer creation and even during the actual scanning.</p
 </div>
 <p>In both cases the same conditions are applied. The regex comprised 118 terminals.</p>
 <p>Then some measurements of parsing speed.</p>
-<div class="table-wrapper"><table><thead><tr><th>Input (Bytes, Tokens)</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
-<tr><td>549, 175</td><td style="text-align: right">0.01ms + 33ms</td><td style="text-align: right">1.2ms + 1ms</td></tr>
-<tr><td>58525, 3111</td><td style="text-align: right">0.76ms + 33ms</td><td style="text-align: right">2.34ms + 1 ms</td></tr>
-<tr><td>5873100, 1159200</td><td style="text-align: right">122ms + 33ms</td><td style="text-align: right">80ms + 1ms</td></tr>
+<div class="table-wrapper"><table><thead><tr><th>Input (Bytes; Tokens)</th><th style="text-align: right">Version 1</th><th style="text-align: right">Version 2</th></tr></thead><tbody>
+<tr><td>549; 175</td><td style="text-align: right">0.01ms + 33ms</td><td style="text-align: right">1.2ms + 1ms</td></tr>
+<tr><td>58525; 3111</td><td style="text-align: right">0.76ms + 33ms</td><td style="text-align: right">2.34ms + 1 ms</td></tr>
+<tr><td>5873100; 1159200</td><td style="text-align: right">122ms + 33ms</td><td style="text-align: right">80ms + 1ms</td></tr>
 </tbody></table>
 </div>
 <p>The added value in cells with times is the constant time to create the tokenizer, which is required
@@ -1807,8 +1807,7 @@ complex. Therefore there exists a second approach to cope with missing non-greed
 <p>You can make the repetition also non-greedy by creating a second scanner mode, here named <code>COMMENT</code>.</p>
 <p>This mode is entered on the <strong>comment start</strong> <code>/\*</code>, then handles all tokens inside a comment and
 enters <code>INITIAL</code> mode on the <strong>comment end</strong> <code>\*/</code> again.</p>
-<pre><code class="language-parol">
-%start NgBlockComment
+<pre><code class="language-parol">%start NgBlockComment
 %comment "Non-greedy block comment"
 
 %on CommentStart %enter COMMENT
@@ -1830,6 +1829,34 @@ CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // Valid in mode COMMENT
 </code></pre>
 <p>The <code>CommentEnd</code> terminal has precedence over <code>CommentContent</code> simply by preceding it in the
 grammar description. This way it can't be 'eaten up' by the <code>CommentContent</code> terminal.</p>
+<h2 id="lookahead-for-terminals"><a class="header" href="#lookahead-for-terminals">Lookahead for terminals</a></h2>
+<p>Having an own scanner implementation enables us to support more features common for lexical analysis.
+Since version 2 parol's scanner generation supports positive and negative lookahead.</p>
+<p>The syntax can be seen in the following examples:</p>
+<pre><code class="language-parol">FunctionName: /[a-zA-Z_][0-9a-zA-Z_]*/ ?= /\s*\(/;
+Operator: /&lt;:|&gt;:/ ?! ':';
+</code></pre>
+<p>The semantic can be described as follows:</p>
+<ul>
+<li>Match the terminal <code>FunctionName</code> only if it is followed by a left parenthesis.</li>
+<li>Match the terminal <code>Operator</code> only if it is <strong>NOT</strong> followed by a colon.</li>
+</ul>
+<p>The right sides of the lookahead operators <code>?=</code> and <code>?!</code> are not considered part of the read token.</p>
+<p>Note that the syntax is explicitly defined as a <code>TokenLiteral</code> follow by an optional <code>LookAhead</code>
+that in turn is defined as positive or negative lookahead operator followed by a <code>TokenLiteral</code>.</p>
+<p>This means that a terminal</p>
+<pre><code class="language-parol">XTerm1: "x" ?= "y";
+</code></pre>
+<p>is different from the terminal</p>
+<pre><code class="language-parol">XTerm2: "x";
+</code></pre>
+<p>in the sense that parol generates two different terminals for the scanner generator, <code>"x" ?= "y"</code>
+and <code>"x"</code> that have different terminal types.</p>
+<p>Be sure to define a "primary non-terminal for a terminal"
+(see <a href="./ParGrammar.html#terminal-name-generation">Grammar description syntax</a>) as in the examples
+above to let <code>parol</code> generate different terminal names (here <code>XTerm1</code> and <code>XTerm2</code>). Using
+terminals with the same left hand side and differing lookahead expressions directly in productions,
+i.e. without defining separate primary non-terminals for each, can lead to unexpected behavior.</p>
 
                     </main>
 
