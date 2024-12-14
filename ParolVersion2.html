@@ -273,6 +273,30 @@ and <code>"x"</code> that have different terminal types.</p>
 above to let <code>parol</code> generate different terminal names (here <code>XTerm1</code> and <code>XTerm2</code>). Using
 terminals with the same left hand side and differing lookahead expressions directly in productions,
 i.e. without defining separate primary non-terminals for each, can lead to unexpected behavior.</p>
+<h2 id="no-vanilla-mode"><a class="header" href="#no-vanilla-mode">No vanilla mode</a></h2>
+<p>The so called <a href="./VanillaMode.html">Vanilla mode</a> is not supported anymore.</p>
+<p>It turned out that this mode, although potentially a little more efficient, is not really used by
+anyone noticeable. The effort of maintaining two different modes is therefore no longer justified.</p>
+<p>The vanilla mode has in summary the following disadvantages:</p>
+<ul>
+<li>Maintenance is hard, especially if you often change your grammar</li>
+<li>Only for power users because it requires deeper insight into the inner structure and the inner
+mode of operation</li>
+<li>It tends to distract or confuse new users of <code>parol</code></li>
+</ul>
+<h3 id="consequences"><a class="header" href="#consequences">Consequences</a></h3>
+<p>The auto generation mode is now the only mode <code>parol</code> provides. No distinction between two different
+modes is necessary anymore. In version 2 you can forget about modes entirely.</p>
+<p>All configurations that explicitly enabled the auto generation mode are removed and should be also
+removed from your code when switching from version 1 to version 2.</p>
+<p>Things you need to change:</p>
+<ul>
+<li>Remove the call of <code>enable_auto_generation()</code> on the <code>Builder</code> in your <code>build.rs</code>.</li>
+<li>Remove the switch <code>--auto-generate</code> resp. <code>-g</code> from the command line arguments of the <code>parol</code> tool.</li>
+</ul>
+<p>If you want to keep your implementation in the vanilla mode your only option is to stay on
+version 1. This should although be no problem, since this version is kept stable and will of course
+receive fixes in the future as well.</p>
 
                     </main>
 
