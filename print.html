@@ -1773,8 +1773,9 @@ speed in the phase of tokenizer creation and even during the actual scanning.</p
 once for each call to the generated parser.</p>
 <p>As you can see, <code>scnr</code> does its job well.</p>
 <h3 id="impact-on-lexical-analysis"><a class="header" href="#impact-on-lexical-analysis">Impact on lexical analysis</a></h3>
-<p>Since <code>scnr</code> doesn't support some regex feature which are either complicated, costly or unnecessary,
-some things can't be resolved simply by the means regex crates like <code>regex-automata</code> provide.
+<p>Since <code>scnr</code> doesn't support some regex features which are either complicated, costly or
+unnecessary, some things can't be resolved simply by the means regex crates like <code>regex-automata</code>
+provide.
 One major feature worth mentioning is non-greediness. Lets dive in this topic with the help of an
 example.</p>
 <p>Let's use the commonly known block comment as our example.</p>
@@ -1855,7 +1856,7 @@ and <code>"x"</code> that have different terminal types.</p>
 <p>Be sure to define a "primary non-terminal for a terminal"
 (see <a href="./ParGrammar.html#terminal-name-generation">Grammar description syntax</a>) as in the examples
 above to let <code>parol</code> generate different terminal names (here <code>XTerm1</code> and <code>XTerm2</code>). Using
-terminals with the same left hand side and differing lookahead expressions directly in productions,
+terminals with the same <code>TokenLiteral</code> and differing lookahead expressions directly in productions,
 i.e. without defining separate primary non-terminals for each, can lead to unexpected behavior.</p>
 <h2 id="no-vanilla-mode"><a class="header" href="#no-vanilla-mode">No vanilla mode</a></h2>
 <p>The so called <a href="./VanillaMode.html">Vanilla mode</a> is not supported anymore.</p>
