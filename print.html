@@ -1882,6 +1882,17 @@ removed from your code when switching from version 1 to version 2.</p>
 <p>If you want to keep your implementation in the vanilla mode your only option is to stay on
 version 1. This should although be no problem, since this version is kept stable and will of course
 receive fixes in the future as well.</p>
+<h2 id="lossless-parse-trees-in-both-ll-and-lr-parsers"><a class="header" href="#lossless-parse-trees-in-both-ll-and-lr-parsers">Lossless parse trees in both LL and LR parsers</a></h2>
+<p>From the beginning of it's development <code>parol</code> generates parse trees and returns them from the
+<code>parse</code> function, as far as the parse tree generation is not suppressed.</p>
+<p>These parse trees are now lossless. This means that tokens which are normally skipped like
+whitespaces, newlines and comments are now preserved and inserted in the parse tree as well.
+This should foster a whole category of applications, including language servers that need
+precise information about the parsed input available in the parse result.</p>
+<p>The parse tree itself is an advanced kind of syntax tree similar to
+<a href="https://github.com/rust-analyzer/rowan">rowan</a>, the one that
+<a href="https://github.com/rust-lang/rust-analyzer">rust-analyzer</a> uses. More precisely it is a tree from
+the <a href="https://github.com/udoprog/syntree">syntree</a> crate.</p>
 
                     </main>
 
