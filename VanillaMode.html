@@ -155,6 +155,10 @@
                 <div id="content" class="content">
                     <main>
                         <h1 id="vanilla-mode"><a class="header" href="#vanilla-mode">Vanilla mode</a></h1>
+<blockquote>
+<p>Note that this mode is not supported anymore in versions greater 1. To comprehend the realization
+back then you should visit branch <a href="https://github.com/jsinger67/parol/tree/release1.0">release1.0</a>.</p>
+</blockquote>
 <p>Although the auto-generation mode (switch <code>-g</code>, <code>--auto_generate</code>) is the recommended way to use
 <code>parol</code> you can alternatively work in <em>vanilla mode</em>.</p>
 <p>That means that <code>parol</code> skips generating AST types for you and it generates only a trait with
@@ -170,7 +174,7 @@ version 0.9.3). But the implementation of new features required more and more ch
 and showed the vulnerability of the existing implementation to changes in the input grammar.</p>
 <p>Anyway, this chapter is dedicated to the way <code>parol</code> functions without auto-generation.</p>
 <p>You may have a look at example
-<a href="https://github.com/jsinger67/parol/tree/main/examples/list">list</a> that uses the <em>vanilla mode</em> and
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/list">list</a> that uses the <em>vanilla mode</em> and
 actually shows how easy it is to work this way.</p>
 <p>We will elaborate this by implementing a list example in an alternative way.</p>
 <pre><code class="language-parol">%start List

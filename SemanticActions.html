@@ -179,6 +179,10 @@ its functions have default implementations.</p>
 </ul>
 <p><img src="ParolModes.svg" alt="Parol&#39;s Modes" />Overview of the two modes</p>
 <h2 id="semantic-actions-in-vanilla-mode"><a class="header" href="#semantic-actions-in-vanilla-mode">Semantic actions in Vanilla mode</a></h2>
+<blockquote>
+<p>Note that this mode is not supported anymore in versions greater 1. To comprehend the realization
+back then you should visit branch <a href="https://github.com/jsinger67/parol/tree/release1.0">release1.0</a>.</p>
+</blockquote>
 <p>In the less comfortable vanilla mode there are some differences we will address next.</p>
 <p>The functions in the semantic actions trait correspond to the <em>productions</em> of the
 <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a>. This implies that you as the user have
@@ -209,11 +213,11 @@ from the previous chapter.</p>
 </code></pre>
 <p>The first thing you will notice is that the trait function has a default implementation. It does
 nothing but returning <code>Ok</code>.</p>
-<p>The second property of a all these functions is that the first argument always is a mutable
+<p>The second property of all these functions is that the first argument always is a mutable
 reference to the implementing item, in this case a reference to <code>VanillaListGrammar</code>.</p>
 <p>The rest of the arguments correspond to the right-hand side of the respective production.</p>
 <p>Next you see a concrete implementation of a semantic action, where all arguments of the semantic
-action are used. This is not always necessary the case and depends on your own language
+action are used. This is not necessarily always the case and depends on your own language
 implementation.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -232,7 +236,7 @@ implementation.</p>
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>You can see that the parameter of the semantic actions which correspond to the right-hand side of
+<p>You can see that the parameters of the semantic actions which correspond to the right-hand side of
 the respective productions are all of type <code>&amp;ParseTreeType</code>. This type from the
 <a href="https://github.com/jsinger67/parol/blob/main/crates/parol_runtime/src/parser/parse_tree_type.rs">parol_runtime</a>
 crate is defined this way:</p>
@@ -296,7 +300,7 @@ semantic actions which are collected on the parse stack for further processing. 
 these results of earlier semantic actions later from other semantic actions and construct the parse
 result step by step using them.</p>
 <p>A good demonstration of this approach can be found at the example
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc</a>.</p>
+<a href="https://github.com/jsinger67/parol/blob/release1.0/examples/calc/calc_grammar.rs">calc</a>.</p>
 <p>The direction in which the parser derives the symbols of your grammar guarantees that when a
 semantic action of a production is called all elements of the production have been processed before.
 That's why you know the non-terminals are collected and lay on top of your own parse stack.</p>
@@ -314,14 +318,14 @@ universally to provide this layer of abstraction by generating the production bo
 actions accordingly.</p>
 <p>This and the automatic AST type inference are the most outstanding properties of <code>parol</code>.</p>
 <p>We will use the example
-<a href="https://github.com/jsinger67/parol/tree/main/examples/calc_auto">calc_auto</a> for detailed
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto">calc_auto</a> for detailed
 explanations.</p>
 <p>The file
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar_trait.rs">calc_grammar_trait.rs</a>
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar_trait.rs">calc_grammar_trait.rs</a>
 contains the generated traits and types we are interested in.</p>
 <p>First we will have a look at the <code>CalcGrammarTrait</code> at the top of this file. For each non-terminal
 of the input grammar
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc.par">calc.par</a> it contains
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc.par">calc.par</a> it contains
 exactly one semantic action.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -338,7 +342,7 @@ pub trait CalcGrammarTrait&lt;'t&gt; {
 <p>The approach taken in this example is quite interesting. We only implement the semantic action for
 the start symbol of our grammar: <em>calc</em>.</p>
 <p>The implementation can be found in
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
 <p>Near the end you can find the one and only semantic action we implement here and thereby creating
 the functionality of a calculator language.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -406,11 +410,11 @@ instruction: logical_or;
 <em>typified</em>.</p>
 <p>This means eventually that any variable of type <code>Calc</code> can represent a validly parsed input sentence
 that belongs to the grammar defined by
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc.par">calc.par</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc.par">calc.par</a>.</p>
 <p>You then only have to evaluate the content of this value as done in this calculator example.
 I recommend to study this example more deeply and the approach will become obvious to you.</p>
 <p>As mentioned earlier the implementation can be found here:
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
 
                     </main>
 
