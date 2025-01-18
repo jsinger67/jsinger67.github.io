@@ -203,15 +203,18 @@ pub struct ListItem&lt;'t&gt; {
 <span class="boring">}</span></code></pre></pre>
 <ol start="2">
 <li>Implement the problematic traits by yourself and avoid the recursion by using a loop instead.
-I can't give a general advice here, but there are plenty examples out there that covers this topic
+I can't give a general advice here, but there are plenty examples out there that cover this topic
 thoroughly.</li>
 </ol>
 <h2 id="q-i-get-strange-errors-while-commissioning-my-new-grammar-and-cant-figure-out-what-the-problem-is"><a class="header" href="#q-i-get-strange-errors-while-commissioning-my-new-grammar-and-cant-figure-out-what-the-problem-is">Q: I get strange errors while commissioning my new grammar and can't figure out what the problem is</a></h2>
 <p>A: Consider the following advices</p>
-<ul>
-<li>Break down the problem with a least input as possible</li>
-<li>Enable traces:</li>
-</ul>
+<h3 id="break-down-the-problem-with-a-least-input-as-possible"><a class="header" href="#break-down-the-problem-with-a-least-input-as-possible">Break down the problem with a least input as possible</a></h3>
+<p>This will limit the possible error location and also minimize the amount of traces to scrutinize.</p>
+<h3 id="disable-error-recovery-for-llk-parsers"><a class="header" href="#disable-error-recovery-for-llk-parsers">Disable error recovery for LL(k) parsers</a></h3>
+<p>The process of error recovery will surely shroud the original error location.
+Therefore it is advisable to temporarily disable it.</p>
+<p>Use Builder API (<code>disable_recovery()</code>) or command line argument (<code>--disable-recovery</code>).</p>
+<h3 id="enable-traces"><a class="header" href="#enable-traces">Enable traces</a></h3>
 <p>In all projects that were generated with <code>parol new</code> the env_logger is built in. First activate all
 traces. I'll show the principle in powershell because this will work on Windows as well as on Linux</p>
 <pre><code class="language-powershell">$env:RUST_LOG="trace"
