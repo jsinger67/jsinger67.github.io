@@ -1,0 +1,308 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Changes in version 3 - The Parol Parser Generator</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+        <!-- MathJax -->
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc.js"></script>
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">The Parol Parser Generator</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="changes-in-version-3"><a class="header" href="#changes-in-version-3">Changes in version 3</a></h1>
+<h2 id="changes-in-public-api"><a class="header" href="#changes-in-public-api">Changes in public API</a></h2>
+<p>Detailed list of changes in the public API</p>
+<ul>
+<li>The number of elements of the tuple struct used in the enum variant <code>Trm</code> of the enum
+<code>parol::grammar::symbol::Terminal</code> has changed.</li>
+<li>The number of elements of the tuple struct used in the enum variant <code>N</code> of the enum
+<code>parol::grammar::symbol::Symbol</code> has changed.</li>
+<li>In the module <code>parol::parser::parol_grammar</code> some public enums have similar changes in some
+variants.</li>
+</ul>
+<p>I expect that most applications that use <code>parol</code> v2 can upgrade to v3 without problems. The
+changes listed above only affect applications that use the <code>parol</code> library for very specific tasks.</p>
+<h3 id="new-feature-user-defined-member-names--grammar-labeling"><a class="header" href="#new-feature-user-defined-member-names--grammar-labeling">New feature "User defined member names / Grammar labeling"</a></h3>
+<p>You can now easily define a user type to which each occurrence of a certain non-terminal should
+be automatically converted to.
+This is done like in the following example:</p>
+<pre><code class="language-parol">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+</code></pre>
+<p>It is similar to the already available <code>%user_type</code> with what you could define an alias for a
+user defined type which in turn you could apply to single symbols on the right-hand side of
+grammar productions. The <code>%nt_type</code> can't be used on terminals but it makes the application to
+non-terminals much easier.
+Here is the old version used in <code>parol</code> itself before (only partial)</p>
+<pre><code class="language-parol">%user_type ScannerConfig = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState: ScannerConfig }
+;
+</code></pre>
+<p>And here is the new variant in which <code>%nt_type</code> is used.</p>
+<pre><code class="language-parol">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState }
+;
+</code></pre>
+<p>The non-terminal <code>ScannerState</code> was automatically defined the be converted to <code>ScannerConfig</code>.</p>
+<p>It is semantically completely identical to use <code>%user_type</code> and the application of it to each
+occurrence of the non-terminal in the grammar explicitly.</p>
+<h2 id="new-feature-non-terminal-types"><a class="header" href="#new-feature-non-terminal-types">New feature "Non-terminal types"</a></h2>
+<p>You can now easily define a user type to which each occurrence of a certain non-terminal should
+be automatically converted to.
+This is done like in the following example:</p>
+<pre><code class="language-parol">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+</code></pre>
+<p>It is similar to the already available <code>%user_type</code> with what you could define an alias for a
+user defined type which in turn you could apply to single symbols on the right-hand side of
+grammar productions. The <code>%nt_type</code> can't be used on terminals but it makes the application to
+non-terminals much easier.
+Here is the old version used in <code>parol</code> itself before (only partial)</p>
+<pre><code class="language-parol">%user_type ScannerConfig = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState: ScannerConfig }
+;
+</code></pre>
+<p>And here is the new variant in which <code>%nt_type</code> is used.</p>
+<pre><code class="language-parol">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState }
+;
+</code></pre>
+<p>The non-terminal <code>ScannerState</code> was automatically defined the be converted to <code>ScannerConfig</code>.</p>
+<p>It is semantically completely identical to use <code>%user_type</code> and the application of it to each
+occurrence of the non-terminal in the grammar explicitly.</p>
+<h2 id="new-feature-terminal-type"><a class="header" href="#new-feature-terminal-type">New feature "Terminal type"</a></h2>
+<p>You can now easily define a user type to which each occurrence of a terminal should be
+automatically converted to.
+This is done like in the following example:</p>
+<pre><code class="language-parol">%t_type crate::parol_ls_grammar::OwnedToken
+</code></pre>
+<p>There can be only one type defined to which all terminals are converted to.</p>
+<p>More precisely, if there are more such directives given the last one will win.</p>
+<p>Here is the old version used in <code>parol-ls</code> itself before (only partial)</p>
+<pre><code class="language-parol">%user_type OwnedToken = crate::parol_ls_grammar::OwnedToken
+// ...
+%%
+// ...
+ScannerSwitch
+    : "%sc": OwnedToken '(': OwnedToken [ Identifier ] ')': OwnedToken
+    | "%push": OwnedToken '(': OwnedToken Identifier ')': OwnedToken
+    | "%pop": OwnedToken '(': OwnedToken ')': OwnedToken
+    ;
+</code></pre>
+<p>And here is the new variant in which <code>%t_type</code> is used.</p>
+<pre><code class="language-parol">%t_type crate::parol_ls_grammar::OwnedToken
+// ...
+%%
+// ...
+ScannerSwitch
+    : "%sc" '(' [ Identifier ] ')'
+    | "%push" '(' Identifier ')'
+    | "%pop" '(' ')'
+    ;
+</code></pre>
+<p>All terminals are automatically defined the be converted to <code>crate::parol_ls_grammar::OwnedToken</code>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="ParolVersion2.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="ParolVersion2.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
