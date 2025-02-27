@@ -168,15 +168,17 @@
 description file. <code>parol</code> is also a library that you can use in your own crates.</p>
 <p>Using a builder API it is easy to integrate the code generation process into your crate's build
 process via a cargo build script (<code>build.rs</code>).</p>
-<p><code>parol</code> can be instructed to infer and generate all AST data types that you would otherwise have to
-design yourself. <code>parol</code> can do this simply by analyzing your language's grammar description.</p>
-<p>You can control the process of AST type generation in two ways. Firstly, you can mark elements for
-omission in your AST. Secondly, you can specify your own types for language elements, which are then
-inserted at the right position into the resulting AST type.</p>
+<p><code>parol</code> infers and generates all AST data types that you would otherwise have to design yourself.
+<code>parol</code> does this simply by analyzing your language's grammar description.</p>
+<p>You can control the process of AST type generation in several ways. First, you can mark elements to
+be omitted from your AST. Second, you can specify your own types for language elements, which are
+then inserted into the resulting AST type at the correct position. Third, for each symbol on the
+right-hand side of a production, you can specify how its corresponding member should be named in the
+generated structure.</p>
 <p>Language description and language implementation is strictly separated in <code>parol</code>. Thus, you can
 design your language's grammar without any need to process anything because generated parsers
 function by default as acceptors. This allows you to do <strong>real rapid prototyping</strong> of your grammar.</p>
-<p><code>parol</code> generates a trait as interface between your language processing and the generated parser.
+<p><code>parol</code> generates a trait as interface between the generated parser and your language processing.
 The trait contains functions for each non-terminal of your grammar which you can implement for
 non-terminals you need to process. In the simplest case you only implement the trait function for
 the start symbol of your grammar which is called after the whole input string is parsed. This
@@ -188,8 +190,8 @@ during the process of parsing.</p>
 <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">Extension</a> for Visual Studio Code
 and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a>.</p>
 <p>As of version 0.24.0 generated parsers can recover from syntax errors automatically. This means that
-the parser usually does not stop parsing the input after the first syntax error occurs, and
-instead tries to synchronize with the input in order to continue the analysis accordingly.</p>
+the parser usually doesn't stop parsing the input after the first syntax error occurs, and instead
+tries to synchronize with the input in order to continue the analysis accordingly.</p>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="history-of-this-project"><a class="header" href="#history-of-this-project">History of this project</a></h1>
 <p>The <code>parol</code> Parser Generator started as a personal journey to master LL(k) parsing with the concise
 means of deterministic finite automata.</p>
@@ -354,8 +356,6 @@ description.</p>
 <p>You have to option to use LALR(1) grammar type this way.</p>
 <pre><code class="language-parol">%grammar_type 'LALR(1)'
 </code></pre>
-<p>The support of the new grammar type is still in a phase of improvement. If there are any obstacles
-here, you can be sure that they will be soon got out of the way.</p>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
 <p>Non-terminals are treated case sensitive, i. e. "list" and "List" are different symbols. But it is
 not encouraged to rely on this in your grammar definition. It is much better to keep a consistent
@@ -528,19 +528,16 @@ stack and to switch to a scanner configuration with the given index in parenthes
 <p>The <code>%pop</code> instruction is used to pop the index of the scanner pushed before and to switch to the
 scanner configuration with that index.</p>
 <blockquote>
-<p>Note that <code>%push</code> and <code>%pop</code> instructions should be balanced. This means that in one context use
+<p>Note, that <code>%push</code> and <code>%pop</code> instructions should be balanced. This means that in one context use
 <strong>only one</strong> of the combinations <code>%push(S1)</code>/<code>%pop</code> and <code>%sc(&lt;S1&gt;)</code>/<code>%sc(&lt;S2&gt;)</code>. <code>%push</code>/<code>%pop</code>
 provides a (call) stack semantics over scanner states whereas <code>%sc</code>/<code>%sc</code> can be used to represent
-scanner state graphs semantics. Mixing both semantics should be avoided or at should least be
+scanner state graphs semantics. Mixing both semantics should be avoided or should at least be
 carefully considered.</p>
 </blockquote>
 <blockquote>
-<p>Currently the scanner parser-based state switching only works if the lookahead
-<strong>at the point where the switch is made</strong> is only of size 1 because the lookahead mechanism is
-directly influenced by the current scanner state. This means the provision of lookahead tokens will
-be made with the current active scanner and may fail if a token is not known by it. In most cases
-this can be circumvented by an appropriate grammar formulation. If this is not possible consider to
-use <code>Scanner-bases scanner switching</code> instead.</p>
+<p>Note, that the provision of lookahead tokens will be made with the current active scanner and may
+fail if a token is not known by it. In most cases this can be circumvented by an appropriate grammar
+formulation. If this is not possible consider to use <code>Scanner-bases scanner switching</code> instead.</p>
 </blockquote>
 <p>You may have look at example <code>scanner_states</code> that demonstrates the handling of scanner states.</p>
 <h3 id="scanner-bases-scanner-switching"><a class="header" href="#scanner-bases-scanner-switching">Scanner-bases scanner switching</a></h3>
@@ -578,14 +575,15 @@ terminal like this:</p>
 <p><em>Be aware that mixing of both parser-bases and scanner-based scanner state switching in one grammar
 file is not allowed and will result in errors.</em></p>
 </blockquote>
-<h2 id="omitting-grammar-symbols-from-the-ast-in-auto-gen-modus"><a class="header" href="#omitting-grammar-symbols-from-the-ast-in-auto-gen-modus">Omitting grammar symbols from the AST in auto-gen modus</a></h2>
-<p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
-<code>parol</code> to not propagate them to the AST in auto-gen modus.</p>
+<h2 id="controlling-the-ast-generation"><a class="header" href="#controlling-the-ast-generation">Controlling the AST generation</a></h2>
+<h3 id="omitting-grammar-symbols-from-the-ast"><a class="header" href="#omitting-grammar-symbols-from-the-ast">Omitting grammar symbols from the AST</a></h3>
+<p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (<code>^</code>). This
+instructs <code>parol</code> to not propagate them to the AST.</p>
 <pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
 <p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
 <code>Alternations</code>. The parentheses are left out.</p>
-<h2 id="assigning-user-types-to-grammar-symbols"><a class="header" href="#assigning-user-types-to-grammar-symbols">Assigning user types to grammar symbols</a></h2>
+<h3 id="assigning-user-types-to-grammar-symbols"><a class="header" href="#assigning-user-types-to-grammar-symbols">Assigning user types to grammar symbols</a></h3>
 <p>You can specify a user type to be inserted into the AST structure at the place where the symbol
 would otherwise had the originally generated type.
 Add after a grammar symbol a colon followed by a user type name to instruct <code>parol</code> to use this type
@@ -610,6 +608,79 @@ you want.</p>
 <p>Then use these aliases behind the colons.</p>
 <pre><code class="language-parol">Num: "0|[1-9][0-9]*": Number;
 </code></pre>
+<h3 id="define-user-types-for-non-terminals"><a class="header" href="#define-user-types-for-non-terminals">Define user types for non-terminals</a></h3>
+<p>As of version 3.0 you can easily define a user type to which each occurrence of a certain
+non-terminal should be automatically converted to.
+This is done like in the following example:</p>
+<pre><code class="language-ebnf">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+</code></pre>
+<p>It is similar to the already available <code>%user_type</code> with what you could define an alias for a
+user defined type which in turn you could apply to single symbols on the right-hand side of
+grammar productions. The <code>%nt_type</code> can't be used on terminals but it makes the application to
+non-terminals much easier.
+Here is the old version used in <code>parol</code> itself before (only partial)</p>
+<pre><code class="language-ebnf">%user_type ScannerConfig = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState: ScannerConfig }
+;
+</code></pre>
+<p>And here is the new variant in which <code>%nt_type</code> is used.</p>
+<pre><code class="language-ebnf">%nt_type ScannerState = crate::parser::parol_grammar::ScannerConfig
+// ...
+%%
+// ...
+Prolog
+: StartDeclaration { Declaration } { ScannerState }
+;
+</code></pre>
+<p>The non-terminal <code>ScannerState</code> was automatically defined the be converted to <code>ScannerConfig</code>.</p>
+<p>It is semantically completely identical to use <code>%user_type</code> and the application of it to each
+occurrence of the non-terminal in the grammar explicitly.</p>
+<h3 id="user-defined-terminal-type"><a class="header" href="#user-defined-terminal-type">User defined terminal type</a></h3>
+<p>As of version 3.0 you can easily define a user type to which each occurrence of a terminal should be
+automatically converted to.
+This is done like in the following example:</p>
+<pre><code class="language-ebnf">%t_type crate::parol_ls_grammar::OwnedToken
+</code></pre>
+<p>There can be only one type defined to which all terminals are converted to.</p>
+<p>More specifically, if several such instructions are given, the last one wins.</p>
+<p>Here is the old version used in <code>parol-ls</code> itself before (only partial)</p>
+<pre><code class="language-ebnf">%user_type OwnedToken = crate::parol_ls_grammar::OwnedToken
+// ...
+%%
+// ...
+ScannerSwitch
+    : "%sc": OwnedToken '(': OwnedToken [ Identifier ] ')': OwnedToken
+    | "%push": OwnedToken '(': OwnedToken Identifier ')': OwnedToken
+    | "%pop": OwnedToken '(': OwnedToken ')': OwnedToken
+    ;
+</code></pre>
+<p>And here is the new variant in which <code>%t_type</code> is used.</p>
+<pre><code class="language-ebnf">%t_type crate::parol_ls_grammar::OwnedToken
+// ...
+%%
+// ...
+ScannerSwitch
+    : "%sc" '(' [ Identifier ] ')'
+    | "%push" '(' Identifier ')'
+    | "%pop" '(' ')'
+    ;
+</code></pre>
+<p>All terminals are automatically defined the be converted to <code>crate::parol_ls_grammar::OwnedToken</code>.</p>
+<h3 id="define-user-defined-member-names"><a class="header" href="#define-user-defined-member-names">Define user defined member names</a></h3>
+<p>As of version 3.0 you can specify for each symbol on the right-hand side of a production how its
+corresponding member in the generated struct should be named.</p>
+<p>To achieve this you can use the newly introduced <code>@</code> operator.</p>
+<pre><code class="language-parol">Declaration :
+    ...
+    | "%nt_type" Identifier@nt_name "="^ UserTypeName@nt_type
+    ...
+</code></pre>
+<p>In this example the member for Identifier in the production will be named <code>nt_name</code> and the member
+for UserTypeName will receive the name <code>nt_type</code> in the generated struct type for this production.</p>
 <h2 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h2>
 <p>Semantic actions are strictly separated from your grammar description.
 You will use a generated trait with default implementations for each production of your grammar. You
@@ -1051,7 +1122,7 @@ of used boxes in generated data structures. The <code>parol::build::Builder</cod
 <code>minimize_boxed_types()</code> that you can call in your build scripts.</p>
 <p><code>parol</code> then determines where no recursions can occur by applying extra calculations on the
 structure of the grammar.</p>
-<h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
+<h2 id="manage-ast-generation"><a class="header" href="#manage-ast-generation">Manage AST generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST type, e.g.:</p>
@@ -1165,6 +1236,10 @@ process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
 <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
+<blockquote>
+<p>For a more complete list of the ways to control the AST type generation, please see here:
+<a href="./ParGrammar.html#controlling-the-ast-generation">Controlling the AST generation</a></p>
+</blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="vanilla-mode"><a class="header" href="#vanilla-mode">Vanilla mode</a></h1>
 <blockquote>
 <p>Note that this mode is not supported anymore in versions greater 1. To comprehend the realization
@@ -1482,6 +1557,11 @@ result step by step using them.</p>
 semantic action of a production is called all elements of the production have been processed before.
 That's why you know the non-terminals are collected and lay on top of your own parse stack.</p>
 <h2 id="semantic-actions-in-auto-generation-mode"><a class="header" href="#semantic-actions-in-auto-generation-mode">Semantic actions in Auto-generation mode</a></h2>
+<blockquote>
+<p>Note that this mode is the default mode in versions greater 1. Actually, it is the only generation
+mode in <code>parol</code> then and has no specific name. If you encounter the terms <code>auto-generation mode</code> or
+<code>auto-gen mode</code> in versions greater 1 you can think of them as the normal way <code>parol</code> works.</p>
+</blockquote>
 <p>The auto-gen mode abstracts away the <a href="AstGeneration.html#the-expanded-grammar">expanded version</a> of
 your grammar. As in <a href="SemanticActions.html#semantic-actions-in-vanilla-mode">vanilla mode</a> the
 <code>parol</code> parser generator creates a trait with functions that represent semantic actions. But here

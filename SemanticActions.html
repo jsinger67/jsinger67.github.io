@@ -305,6 +305,11 @@ result step by step using them.</p>
 semantic action of a production is called all elements of the production have been processed before.
 That's why you know the non-terminals are collected and lay on top of your own parse stack.</p>
 <h2 id="semantic-actions-in-auto-generation-mode"><a class="header" href="#semantic-actions-in-auto-generation-mode">Semantic actions in Auto-generation mode</a></h2>
+<blockquote>
+<p>Note that this mode is the default mode in versions greater 1. Actually, it is the only generation
+mode in <code>parol</code> then and has no specific name. If you encounter the terms <code>auto-generation mode</code> or
+<code>auto-gen mode</code> in versions greater 1 you can think of them as the normal way <code>parol</code> works.</p>
+</blockquote>
 <p>The auto-gen mode abstracts away the <a href="AstGeneration.html#the-expanded-grammar">expanded version</a> of
 your grammar. As in <a href="SemanticActions.html#semantic-actions-in-vanilla-mode">vanilla mode</a> the
 <code>parol</code> parser generator creates a trait with functions that represent semantic actions. But here

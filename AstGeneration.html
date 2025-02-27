@@ -255,7 +255,7 @@ of used boxes in generated data structures. The <code>parol::build::Builder</cod
 <code>minimize_boxed_types()</code> that you can call in your build scripts.</p>
 <p><code>parol</code> then determines where no recursions can occur by applying extra calculations on the
 structure of the grammar.</p>
-<h2 id="manage-type-generation"><a class="header" href="#manage-type-generation">Manage Type generation</a></h2>
+<h2 id="manage-ast-generation"><a class="header" href="#manage-ast-generation">Manage AST generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
 <code>parol</code> to not propagate them to the AST type, e.g.:</p>
@@ -369,6 +369,10 @@ process.</p>
 <p>There exist some examples that can help to become familiar with this concept. Maybe you would like
 to have a look at my rudimentary
 <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
+<blockquote>
+<p>For a more complete list of the ways to control the AST type generation, please see here:
+<a href="./ParGrammar.html#controlling-the-ast-generation">Controlling the AST generation</a></p>
+</blockquote>
 
                     </main>
 
