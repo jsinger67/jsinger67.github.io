@@ -246,7 +246,7 @@ CommentContent: &lt;COMMENT&gt;/[.\r\n]/; // Valid in mode COMMENT
 </code></pre>
 <p>The <code>CommentEnd</code> terminal has precedence over <code>CommentContent</code> simply by preceding it in the
 grammar description. This way it can't be 'eaten up' by the <code>CommentContent</code> terminal.</p>
-<h2 id="lookahead-for-terminals"><a class="header" href="#lookahead-for-terminals">Lookahead for terminals</a></h2>
+<h3 id="lookahead-for-terminals"><a class="header" href="#lookahead-for-terminals">Lookahead for terminals</a></h3>
 <p>Having an own scanner implementation enables us to support more features common for lexical analysis.
 Since version 2 parol's scanner generation supports positive and negative lookahead.</p>
 <p>The syntax can be seen in the following examples:</p>
@@ -274,6 +274,29 @@ and <code>"x"</code> that have different terminal types.</p>
 above to let <code>parol</code> generate different terminal names (here <code>XTerm1</code> and <code>XTerm2</code>). Using
 terminals with the same <code>TokenLiteral</code> and differing lookahead expressions directly in productions,
 i.e. without defining separate primary non-terminals for each, can lead to unexpected behavior.</p>
+<h3 id="the-feature-regex_automata"><a class="header" href="#the-feature-regex_automata">The feature <code>regex_automata</code></a></h3>
+<p>As of version 2.2.0 of <code>parol_runtime</code> if you enable the feature <code>regex_automata</code> the <code>scnr</code>
+crate basically uses the <code>regex_automata</code> crate as regex engine instead of <code>scnr</code>'s own regex
+engine. The <code>regex_automata</code> crate provides more regex features, such as non-greedy repetitions,
+flags and anchored matches.</p>
+<p>Both, the feature <code>regex_automata</code> and the <code>default</code> feature are mutually exclusive. You can enable
+one of them, but not both at the same time.</p>
+<p>Using the default feature set is straight forward:</p>
+<pre><code class="language-toml">parol_runtime = "2.2.0"
+</code></pre>
+<p>For the feature <code>regex_automata</code> to be enabled use this variant:</p>
+<pre><code class="language-toml">parol_runtime = { version = "2.2.0", default-features = false, features = [ "regex_automata" ] }
+</code></pre>
+<p>Using the <code>default</code> feature usually results in a slower scanner, but it is faster at compiling
+the regexes.</p>
+<p>On the other hand, the <code>regex_automata</code> feature creates faster scanners, but it is possibly slower
+at compiling the regexes. This depends on the size of your scanner modes, i.e. the number of regexes
+you use.</p>
+<p><code>scnr</code> maintains a cache of compiled scanner modes, i.e. compiled regexes in both feature
+configurations. This can mitigate the costs of regex compilation if they are used multiple times
+during the lifetime of your parsing tool.</p>
+<p>I can't give a simple rule of thumb, which regex engine of <code>scnr</code> to chose for your parsing tool.
+Therefore I recommend to carry out your own measurements.</p>
 <h2 id="no-vanilla-mode"><a class="header" href="#no-vanilla-mode">No vanilla mode</a></h2>
 <p>The so called <a href="./VanillaMode.html">Vanilla mode</a> is not supported anymore.</p>
 <p>It turned out that this mode, although potentially a little more efficient, is not really used by
