@@ -25,30 +25,43 @@
         <link rel="stylesheet" href="fonts/fonts.css">
 
         <!-- Highlight.js Stylesheets -->
-        <link rel="stylesheet" href="highlight.css">
-        <link rel="stylesheet" href="tomorrow-night.css">
-        <link rel="stylesheet" href="ayu-highlight.css">
+        <link rel="stylesheet" id="highlight-css" href="highlight.css">
+        <link rel="stylesheet" id="tomorrow-night-css" href="tomorrow-night.css">
+        <link rel="stylesheet" id="ayu-highlight-css" href="ayu-highlight.css">
 
         <!-- Custom theme stylesheets -->
 
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
-        <!-- Provide site root to javascript -->
+        <!-- Provide site root and default themes to javascript -->
         <script>
-            var path_to_root = "";
-            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc.js"></script>
     </head>
     <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
     <div id="body-container">
         <!-- Work around some values being stored in localStorage wrapped in quotes -->
         <script>
             try {
-                var theme = localStorage.getItem('mdbook-theme');
-                var sidebar = localStorage.getItem('mdbook-sidebar');
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
 
                 if (theme.startsWith('"') && theme.endsWith('"')) {
                     localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
@@ -62,7 +75,8 @@
 
         <!-- Set the theme before any content is loaded, prevents flash -->
         <script>
-            var theme;
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
             try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
             if (theme === null || theme === undefined) { theme = default_theme; }
             const html = document.documentElement;
@@ -75,17 +89,20 @@
 
         <!-- Hide / unhide sidebar before it is displayed -->
         <script>
-            var sidebar = null;
-            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
             if (document.body.clientWidth >= 1080) {
                 try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
                 sidebar = sidebar || 'visible';
             } else {
                 sidebar = 'hidden';
+                sidebar_toggle.checked = false;
             }
-            sidebar_toggle.checked = sidebar === 'visible';
-            html.classList.remove('sidebar-visible');
-            html.classList.add("sidebar-" + sidebar);
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
         </script>
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
@@ -112,13 +129,14 @@
                             <i class="fa fa-paint-brush"></i>
                         </button>
                         <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="default_theme">Auto</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
                             <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
                         </ul>
-                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                        <button id="search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="searchbar">
                             <i class="fa fa-search"></i>
                         </button>
                     </div>
@@ -135,7 +153,12 @@
 
                 <div id="search-wrapper" class="hidden">
                     <form id="searchbar-outer" class="searchbar-outer">
-                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                        <div class="search-wrapper">
+                            <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </div>
+                        </div>
                     </form>
                     <div id="searchresults-outer" class="searchresults-outer hidden">
                         <div id="searchresults-header" class="searchresults-header"></div>
@@ -507,6 +530,11 @@ in angle brackets. Like this:</p>
 </code></pre>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
+<blockquote>
+<p><strong>Note for Parol v4:</strong>
+Parser-based scanner switching is no longer supported. All scanner switching must now be handled by the scanner itself using scanner-based switching.
+Please update your grammars accordingly. See <a href="./ParolVersion4.html">Changes in version 4</a> for migration details.</p>
+</blockquote>
 <h3 id="parser-bases-scanner-switching"><a class="header" href="#parser-bases-scanner-switching">Parser-bases scanner switching</a></h3>
 <p>The first way to control scanner states is to define switching directives within your productions.
 This way can only be used for LL(k) grammars because the parser has full knowledge about which
@@ -540,7 +568,12 @@ fail if a token is not known by it. In most cases this can be circumvented by an
 formulation. If this is not possible consider to use <code>Scanner-bases scanner switching</code> instead.</p>
 </blockquote>
 <p>You may have look at example <code>scanner_states</code> that demonstrates the handling of scanner states.</p>
-<h3 id="scanner-bases-scanner-switching"><a class="header" href="#scanner-bases-scanner-switching">Scanner-bases scanner switching</a></h3>
+<h3 id="scanner-based-scanner-switching"><a class="header" href="#scanner-based-scanner-switching">Scanner-based scanner switching</a></h3>
+<blockquote>
+<p><strong>Note for Parol v4:</strong>
+Scanner-based switching is now the only supported method for scanner state transitions.
+All features and examples referring to parser-based switching are deprecated as of v4.</p>
+</blockquote>
 <p>LR grammars reduce the parser stack from the right side and thus you can't decide the scanner state
 switching from the perspective of the parser. The tokens are already read and pushed on the parse
 stack before it can be decided what production to reduce on them. This means scanner state switching
@@ -2130,6 +2163,36 @@ dependencies uses. These two crates are precisely coordinated.</p>
 <p>To check this you can use the following command:</p>
 <pre><code class="language-shell">cargo tree -i parol_runtime
 </code></pre>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="changes-in-version-4"><a class="header" href="#changes-in-version-4">Changes in version 4</a></h1>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Version 4 of Parol introduces significant changes that may affect existing projects and workflows. This document summarizes all updates, breaking changes, and migration hints for users upgrading from previous versions.</p>
+<hr />
+<h2 id="major-changes"><a class="header" href="#major-changes">Major Changes</a></h2>
+<h3 id="1-switch-to-scnr2-scanner-crate"><a class="header" href="#1-switch-to-scnr2-scanner-crate">1. Switch to <code>scnr2</code> Scanner Crate</a></h3>
+<p>Parol now uses the <a href="https://crates.io/crates/scnr2"><code>scnr2</code></a> scanner crate for lexical analysis. This change improves performance and maintainability but may require adjustments in custom scanner configurations.</p>
+<p><strong>Impact:</strong></p>
+<ul>
+<li>All scanner-related features are now based on <code>scnr2</code>.</li>
+<li>Custom scanner switching logic must be adapted to the new API.</li>
+</ul>
+<h3 id="2-removal-of-parser-based-scanner-switching"><a class="header" href="#2-removal-of-parser-based-scanner-switching">2. Removal of Parser-Based Scanner Switching</a></h3>
+<p>Support for parser-based scanner switching has been removed. Scanner switching is now exclusively handled by the scanner itself.</p>
+<p><strong>Impact:</strong></p>
+<ul>
+<li>Any grammar or code relying on parser-driven scanner switching must be refactored.</li>
+<li>See migration notes below.</li>
+</ul>
+<hr />
+<h2 id="migration-notes"><a class="header" href="#migration-notes">Migration Notes</a></h2>
+<ul>
+<li>Review your grammar files and custom code for any use of parser-based scanner switching and update them to use scanner-based switching.</li>
+<li>Refer to the <a href="https://crates.io/crates/scnr2">scnr2 documentation</a> for details on the new scanner API.</li>
+<li>Test your grammars and integrations thoroughly after upgrading.</li>
+</ul>
+<hr />
+<h2 id="further-information"><a class="header" href="#further-information">Further Information</a></h2>
+<p>For a complete list of changes, see the <a href="../../crates/parol/CHANGELOG.html">Changelog</a>.</p>
+<p>If you encounter issues, please consult the <a href="./QnA.html">Q&amp;A</a> or open an issue on the <a href="https://github.com/jsinger67/parol">Parol GitHub repository</a>.</p>
 
                     </main>
 
@@ -2173,6 +2236,7 @@ dependencies uses. These two crates are precisely coordinated.</p>
             });
         });
         </script>
+
 
     </div>
     </body>
