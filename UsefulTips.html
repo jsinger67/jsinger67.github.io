@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Useful tips - The Parol Parser Generator</title>
+        <title>Useful Tips - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,11 +177,9 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="useful-tips"><a class="header" href="#useful-tips">Useful tips</a></h1>
-<h2 id="build-performance"><a class="header" href="#build-performance">Build performance</a></h2>
-<p>To get an optimized build performance when using <code>parol</code>'s
-<a href="https://github.com/jsinger67/parol/blob/main/crates/parol/src/build.rs">Builder</a> API in your
-<code>build.rs</code> script you can insert the following overrides into your <code>Cargo.toml</code> file:</p>
+                        <h1 id="useful-tips"><a class="header" href="#useful-tips">Useful Tips</a></h1>
+<h2 id="build-performance"><a class="header" href="#build-performance">Build Performance</a></h2>
+<p>To optimize build performance when using <code>parol</code>'s <a href="https://github.com/jsinger67/parol/blob/main/crates/parol/src/build.rs">Builder</a> API in your <code>build.rs</code> script, add the following overrides to your <code>Cargo.toml</code> file:</p>
 <pre><code class="language-toml"># Optimized build performance
 [profile.dev.build-override]
 opt-level = 3
@@ -189,50 +187,31 @@ opt-level = 3
 [profile.release.build-override]
 opt-level = 3
 </code></pre>
-<h3 id="credits"><a class="header" href="#credits">Credits</a></h3>
-<p>Thanks to <a href="https://github.com/dalance">dalance</a> for reporting
-<a href="https://github.com/jsinger67/parol/issues/49">#49 (build.rs performance)</a></p>
-<h2 id="performance-of-parser-generation"><a class="header" href="#performance-of-parser-generation">Performance of parser generation</a></h2>
-<p>First you need to understand that the necessity to frequently generate the parser from a given
-grammar is drastically diminished in <code>parol</code> because of its design.
-That means <code>parol</code> generates besides the data structures for your grammar only an interface and the
-plumping to call its methods.
-This cuts the dependencies for parser generation from any code you write to process your grammar,
-i.e. the interface's implementation.</p>
+<h4 id="credits"><a class="header" href="#credits">Credits</a></h4>
+<p>Thanks to <a href="https://github.com/dalance">dalance</a> for reporting <a href="https://github.com/jsinger67/parol/issues/49">issue #49 (build.rs performance)</a>.</p>
+<h2 id="parser-generation-performance"><a class="header" href="#parser-generation-performance">Parser Generation Performance</a></h2>
+<p>The need to frequently regenerate the parser from a grammar is greatly reduced in <code>parol</code> due to its design. <code>parol</code> generates data structures for your grammar, an interface, and the plumbing to call its methods. This separates parser generation from any code you write to process your grammar, such as the interface's implementation.</p>
 <blockquote>
-<p>By the way, this property enables ad hoc generation of acceptors for any valid grammar, which I like
-to call <em>rapid prototyping</em> for your grammar.</p>
+<p>This feature enables ad hoc generation of acceptors for any valid grammar, which can be considered <em>rapid prototyping</em> for your grammar.</p>
 </blockquote>
-<p>So, you only need to generate the parser if you change anything in your grammar description, i.e.
-in your *.par file.
-If parser generation is expensive for your grammar, what indeed can be the case, I advice you to put
-the generated parser and the user trait under source control.</p>
-<p>The next thing you should understand is that you should design your grammar to be LL(k) with k as
-minimal as possible. I know, this can be hard but will pay out in the end.</p>
-<p>Also try to optimize your grammar for the goal "Minimal number of productions". This can be often
-broken down to these constraints:</p>
+<p>You only need to regenerate the parser when you change your grammar description (i.e., your <code>.par</code> file). If parser generation is expensive for your grammar, consider placing the generated parser and user trait under source control.</p>
+<p>It is beneficial to design your grammar to be LL(k) with the smallest possible k. Although this can be challenging, it is worthwhile.</p>
+<p>Also, optimize your grammar for a minimal number of productions. Consider these guidelines:</p>
 <ul>
-<li>Avoid productions that only rename a non-terminal, i.e. the ones in the form
+<li>Avoid productions that only rename a non-terminal, such as:
 <pre><code class="language-parol">A: B;
 </code></pre>
 </li>
-<li>Try to disambiguate your productions, i.e. avoid duplications that have the following form
+<li>Disambiguate your productions and avoid duplications like:
 <pre><code class="language-parol">A: X Y Z;
 B: X Y Z;
 </code></pre>
-Pin down why you need productions with identical right-hand-sides. Aren't they actually the same
-and shouldn't they rather be unified?</li>
+Determine why you need productions with identical right-hand sides. If they are actually the same, consider unifying them.</li>
 </ul>
-<p>If you have a historical grammar definition that is left recursive, which in deed is possible
-for instance because of the ubiquity of Yacc/Bison grammar descriptions, you should allow for extra
-time and effort to convert it to a working right recursive one.</p>
-<p>Or you use the opportunity to use LALR(1) grammars without having to forgo the comfort of <code>parol</code>.
-Have a look at the specification of a
-<a href="https://jsinger67.github.io/ParGrammar.html#defining-the-grammar-type">grammar type</a>.</p>
-<p><code>parol</code> currently provides no special support for this phase except that it is able to detect left
-recursions in your grammar.</p>
-<p>I may provide support for parts of this problem in the future, for instance to remove direct left
-recursions somehow.</p>
+<p>If you have a historical grammar definition that is left-recursive (common in Yacc/Bison grammar descriptions), allow extra time and effort to convert it to a right-recursive form.</p>
+<p>Alternatively, you can use LALR(1) grammars without sacrificing the convenience of <code>parol</code>. See the <a href="https://jsinger67.github.io/ParGrammar.html#defining-the-grammar-type">grammar type specification</a>.</p>
+<p><code>parol</code> currently does not provide special support for this phase, except for detecting left recursions in your grammar.</p>
+<p>Support for removing direct left recursions may be provided in the future.</p>
 
                     </main>
 

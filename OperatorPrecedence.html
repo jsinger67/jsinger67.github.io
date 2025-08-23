@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Operator precedence - The Parol Parser Generator</title>
+        <title>Operator Precedence - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,11 +177,11 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="operator-precedence"><a class="header" href="#operator-precedence">Operator precedence</a></h1>
-<p>Operator precedence is realized by means of grammar definition.
-In other words you put higher prioritized elements into sub-categories. Using this approach you
-force the parser to branch into those first which leads to earlier evaluation in the end.</p>
-<p>Please have a look at this example:</p>
+                        <h1 id="operator-precedence"><a class="header" href="#operator-precedence">Operator Precedence</a></h1>
+<p>Operator precedence is implemented through grammar definitions. By placing higher-priority elements
+into sub-categories, you force the parser to branch into those first, resulting in earlier
+evaluation.</p>
+<p>Consider the following example:</p>
 <pre><code class="language-parol">%start Precedence
 %title "Operator precedence"
 %comment "Shows the handling of operator precedence in `parol`"
@@ -190,68 +190,185 @@ force the parser to branch into those first which leads to earlier evaluation in
 
 // ---------------------------------------------------------
 // VARIABLE
-Variable: /(?i)[A-Z][0-9A-Z]*/
-        ;
-Literal : /[0-9]+/
-        ;
+Variable: /(?i)[A-Z][0-9A-Z]*/ ;
+Literal : /[0-9]+/ ;
 
 // ---------------------------------------------------------
 // OPERATOR SYMBOLS
-Plus    : '+'
-        ;
-Minus   : '-'
-        ;
-MulOp   : "\*|/"
-        ;
+Plus    : '+' ;
+Minus   : '-' ;
+MulOp   : "\*|/" ;
 
 // ---------------------------------------------------------
 // PARENTHESIS
-LParen  : '('
-        ;
-RParen  : ')'
-        ;
+LParen  : '(' ;
+RParen  : ')' ;
 
 // ---------------------------------------------------------
 // EXPRESSIONS in order of increasing precedence
-Precedence
-        : Summation
-        ;
-Summation
-        : Multiplication { (Plus | Minus) Multiplication }
-        ;
-Multiplication
-        : Factor { MulOp Factor }
-        ;
-Factor  : Literal
-        | Variable
-        | Minus Factor
-        | LParen Precedence RParen
-        ;
+Precedence      : Summation ;
+Summation       : Multiplication { (Plus | Minus) Multiplication } ;
+Multiplication  : Factor { MulOp Factor } ;
+Factor          : Literal
+                | Variable
+                | Minus Factor
+                | LParen Precedence RParen ;
 </code></pre>
-<p>Parsing the string <code>-1 + x * 5</code> with the generated parser will create the following parse tree:</p>
+<p>Parsing the string <code>-1 + x * 5</code> with the generated parser produces the following parse tree:</p>
 <p><img src="./precedence/test.svg" alt="Parse Tree" /></p>
-<blockquote>
-<p>Hint: If the picture is too small please open it in a separate tab via context menu.</p>
-</blockquote>
-<p>Here you can see that the "inner most" operator is evaluated first by the parser, here the negation
-in production <code>Factor</code>.</p>
-<p>The <code>Multiplication</code> is the  second highest priority in our example. It is a sub-category of the
+<p>Notice that the innermost operator is evaluated first by the parser—here, the negation in the
+<code>Factor</code> production.</p>
+<p><code>Multiplication</code> is the second-highest priority in this example, as it is a sub-category of
 <code>Summation</code>.</p>
-<p>You can try this grammar by calling</p>
+<p>To try this grammar, run:</p>
 <pre><code class="language-shell">parol new --bin --path .\precedence --tree
 </code></pre>
-<p>Open the generated crate and substitute the generated dummy grammar by the one above.
-Also change the test.txt to the content</p>
+<p>Replace the generated dummy grammar with the example above. Also, set <code>test.txt</code> to:</p>
 <pre><code class="language-text">-1 + x * 5
 </code></pre>
-<p>Now you can parse this text by calling</p>
+<p>Parse the text by running:</p>
 <pre><code class="language-shell">cargo run ./test.txt
 </code></pre>
-<p>from the generated crate's root folder.</p>
-<p>Since we added the <code>--tree</code> flag at the <code>parol new</code> command parol generates parse trees for us.
-Search for a <code>test.svg</code> file beside the <code>text.txt</code> file.</p>
-<p>I advice to use the parse tree generation feature when developing your grammar and to remove it
-again when putting your parser into production mode.</p>
+<p>from the root of the generated crate.</p>
+<p>Because the <code>--tree</code> flag was used with <code>parol new</code>, parse trees are generated automatically. Look
+for a <code>test.svg</code> file next to <code>test.txt</code>.</p>
+<p>It is recommended to use parse tree generation during grammar development and remove it when
+deploying your parser in production.</p>
+<p><em><strong>However, the parse tree can be useful in certain scenarios. Because it's lossless, it also
+includes otherwise discarded tokens like spaces.</strong></em></p>
+<h2 id="how-do-i-implement-the-grammar-processing"><a class="header" href="#how-do-i-implement-the-grammar-processing">How do I implement the grammar processing?</a></h2>
+<p>You should have a look at the example <a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a>.</p>
+<p>Basically, the grammar processing is implemented in the <code>calc_grammar.rs</code>.</p>
+<p>The struct <code>CalcGrammar</code> contains a collection of variables and their values called <code>env</code>.
+It also contains a stack of values that holds the intermediate results during the calculation:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub calc_results: Vec&lt;DefinitionRange&gt;,
+pub env: BTreeMap&lt;String, DefinitionRange&gt;,
+<span class="boring">}</span></code></pre></pre>
+<p>You can extend the struct <code>PrecedenceGrammar</code> in <code>src\precedence_grammar.rs</code> the same way.</p>
+<p>Now you can implement selected semantic actions from the <code>PrecedenceGrammarTrait</code>. Look at the
+generated <code>src\precedence_grammar_trait.rs</code>. It contains all available semantic actions which are
+bound to non-terminals.</p>
+<p>To implement for instance the <code>variable</code> action, copy the <code>fn variable...</code> block into the</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;'t&gt; PrecedenceGrammarTrait&lt;'t&gt; for PrecedenceGrammar&lt;'t&gt; {
+
+}
+<span class="boring">}</span></code></pre></pre>
+<p>This way:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl&lt;'t&gt; PrecedenceGrammarTrait&lt;'t&gt; for PrecedenceGrammar&lt;'t&gt; {
+    /// Semantic action for non-terminal 'Variable'
+    fn variable(&amp;mut self, _arg: &amp;Variable&lt;'t&gt;) -&gt; Result&lt;()&gt; {
+        Ok(())
+    }
+
+    /// Semantic action for non-terminal 'Precedence'
+    fn precedence(&amp;mut self, arg: &amp;Precedence&lt;'t&gt;) -&gt; Result&lt;()&gt; {
+        self.precedence = Some(arg.clone());
+        Ok(())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<p>Now you can handle any variable. Because our grammar has no assignment yet, the function is simple.
+It tries to retrieve the variables value from the <code>env</code>. If the variable is not found in the <code>env</code>
+it creates a new entry with default value 0. Then it pushes this value on the <code>calc_results</code> vector
+for later processing:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    /// Semantic action for non-terminal 'Variable'
+    fn variable(&amp;mut self, var: &amp;Variable&lt;'t&gt;) -&gt; Result&lt;()&gt; {
+        // Try to find the variable in the environment
+        let value = if let Some(value) = self.env.get(var.variable.text()) {
+            *value
+        } else {
+            // Insert default value for unassigned variable
+            self.env
+                .insert(var.variable.text().to_string(), DefinitionRange::default());
+            DefinitionRange::default()
+        };
+        self.calc_results.push(value);
+        Ok(())
+    }
+<span class="boring">}</span></code></pre></pre>
+<p>Don't forget to <code>use</code> the type <code>Variable</code> from the module <code>precedence_grammar_trait</code>.</p>
+<p>To see the results modify the Display implementation of <code>PrecedenceGrammar</code> to show the intermediate
+results and the environment.</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl Display for PrecedenceGrammar&lt;'_&gt; {
+    fn fmt(&amp;self, f: &amp;mut Formatter&lt;'_&gt;) -&gt; std::result::Result&lt;(), Error&gt; {
+        writeln!(
+            f,
+            "Result stack\n{}",
+            self.calc_results
+                .iter()
+                .rev()
+                .map(|e| format!("{}", e))
+                .collect::&lt;Vec&lt;String&gt;&gt;()
+                .join("\n")
+        )?;
+        writeln!(
+            f,
+            "\nEnv\n{}",
+            self.env
+                .iter()
+                .map(|(i, v)| format!("{} = {}", i, v))
+                .collect::&lt;Vec&lt;String&gt;&gt;()
+                .join("\n")
+        )
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-shell">    cargo run ./test.txt
+Parsing took 0 milliseconds.
+Success!
+Result stack
+0
+
+Env
+x = 0
+</code></pre>
+<p>As expected the variable <code>x</code> has been inserted into the environment with default value 0.
+The Value 0 is still on the stack.</p>
+<p>Now the next step could be to implement the semantic action for non-terminal <code>Literal</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    /// Semantic action for non-terminal 'Literal'
+    fn literal(&amp;mut self, lit: &amp;Literal&lt;'t&gt;) -&gt; Result&lt;()&gt; {
+        // Convert the integer literal to its value
+        let lit = lit
+            .literal
+            .text()
+            .parse::&lt;DefinitionRange&gt;()
+            .map_err(|e| parol!(format!("Cannot convert literal to integer: {}", e)))?;
+        // Push it onto the calculation stack
+        self.calc_results.push(lit);
+        Ok(())
+    }
+<span class="boring">}</span></code></pre></pre>
+<pre><code class="language-shell">    cargo run ./test.txt
+Parsing took 0 milliseconds.
+Success!
+Result stack
+5
+0
+1
+
+Env
+x = 0
+</code></pre>
+<p>Now I think you could continue on your own. Implement the binary operations by taking the two top
+most numbers from the calculation stack and push the result on the stack again.
+If all is implemented correctly the end result of the calculation should be laying as single value
+on top of the calculation stack.</p>
+<p><code>-1 + x * 5</code> should the result into <code>-1 + 0 * 5</code> =&gt; <code>-1</code>.</p>
+<p>Now you could add assignments to your Grammar to be able to use variables to store and access values.
+Allow the grammar to contain multiple operations and remove assigned values from the calculation
+stack.</p>
 
                     </main>
 

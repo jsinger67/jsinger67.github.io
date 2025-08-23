@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Semantic actions - The Parol Parser Generator</title>
+        <title>Semantic Actions - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -189,153 +189,14 @@ scheme:</p>
     // ...
 }
 <span class="boring">}</span></code></pre></pre>
-<p>The lifetime parameter &lt;'t&gt; can be left out if the types used don't hold references to the scanned
+<p>The lifetime parameter <code>&lt;'t&gt;</code> can be left out if the types used don't hold references to the scanned
 text. This is automatically deduced.</p>
 <p>Eventually your grammar processing item implements this trait and can overwrite those functions of
 the trait in which it is interested in.</p>
 <p>It doesn't need to implement all trait functions because the trait is created in a way where all of
 its functions have default implementations.</p>
-<p><code>parol</code> provides two different modes with different properties of semantic actions:</p>
-<ul>
-<li><a href="SemanticActions.html#semantic-actions-in-vanilla-mode">Vanilla mode</a></li>
-<li><a href="SemanticActions.html#semantic-actions-in-auto-generation-mode">Auto-gen mode</a></li>
-</ul>
-<p><img src="ParolModes.svg" alt="Parol&#39;s Modes" />Overview of the two modes</p>
-<h2 id="semantic-actions-in-vanilla-mode"><a class="header" href="#semantic-actions-in-vanilla-mode">Semantic actions in Vanilla mode</a></h2>
-<blockquote>
-<p>Note that this mode is not supported anymore in versions greater 1. To comprehend the realization
-back then you should visit branch <a href="https://github.com/jsinger67/parol/tree/release1.0">release1.0</a>.</p>
-</blockquote>
-<p>In the less comfortable vanilla mode there are some differences we will address next.</p>
-<p>The functions in the semantic actions trait correspond to the <em>productions</em> of the
-<a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a>. This implies that you as the user have
-to look more closely at this transformed version of your original grammar and that you should have a
-basic understanding of the <a href="AstGeneration.html#grammar-transformation">transformations</a> that had
-been applied to it.</p>
-<p>The functions' parameter then correspond to the right-hand side of the respective production.</p>
-<p>To demonstrate this aspect we show an excerpt of the generated semantic actions seen in the example
-from the previous chapter.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait VanillaListGrammarTrait {
-    // ...
-
-    /// Semantic action for production 5:
-    ///
-    /// Num: "0|[1-9][0-9]*";
-    ///
-    fn num(&amp;mut self, _num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
-        Ok(())
-    }
-
-    // ...
-}
-<span class="boring">}</span></code></pre></pre>
-<p>This is only the semantic action for production 5:</p>
-<pre><code class="language-parol">/* 5 */ Num: "0|[1-9][0-9]*";
-</code></pre>
-<p>The first thing you will notice is that the trait function has a default implementation. It does
-nothing but returning <code>Ok</code>.</p>
-<p>The second property of all these functions is that the first argument always is a mutable
-reference to the implementing item, in this case a reference to <code>VanillaListGrammar</code>.</p>
-<p>The rest of the arguments correspond to the right-hand side of the respective production.</p>
-<p>Next you see a concrete implementation of a semantic action, where all arguments of the semantic
-action are used. This is not necessarily always the case and depends on your own language
-implementation.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl VanillaListGrammarTrait for VanillaListGrammar {
-    /// Semantic action for production 5:
-    ///
-    /// Num: "0|[1-9][0-9]*";
-    ///
-    fn num(&amp;mut self, num: &amp;ParseTreeType) -&gt; Result&lt;()&gt; {
-        let symbol = num.text()?;
-        let number = symbol
-            .parse::&lt;DefinitionRange&gt;()
-            .map_err(|e| parol!("num: Parse error: {e}"))?;
-        self.push(number);
-        Ok(())
-    }
-}
-<span class="boring">}</span></code></pre></pre>
-<p>You can see that the parameters of the semantic actions which correspond to the right-hand side of
-the respective productions are all of type <code>&amp;ParseTreeType</code>. This type from the
-<a href="https://github.com/jsinger67/parol/blob/main/crates/parol_runtime/src/parser/parse_tree_type.rs">parol_runtime</a>
-crate is defined this way:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>///
-/// The type of the elements in the parse tree.
-///
-/// The lifetime parameter `'t` refers to the lifetime of the scanned text.
-///
-#[derive(Debug, Clone)]
-pub enum ParseTreeType&lt;'t&gt; {
-    ///
-    /// A scanned token.
-    ///
-    T(Token&lt;'t&gt;),
-
-    ///
-    /// A non-terminal name.
-    /// All names are of static lifetime (see NON_TERMINALS slice of non-terminal names).
-    ///
-    N(&amp;'static str),
-}
-<span class="boring">}</span></code></pre></pre>
-<p>It implements two functions that you can directly call in your semantic actions:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl&lt;'t&gt; ParseTreeType&lt;'t&gt; {
-    ///
-    /// Tries to access the Token of the ParseTreeType.
-    /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    ///
-    pub fn token(&amp;self) -&gt; Result&lt;&amp;Token&lt;'t&gt;, ParserError&gt; {
-        match self {
-            Self::T(t) =&gt; Ok(t),
-            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
-        }
-    }
-
-    ///
-    /// Tries to access the scanned text of the ParseTreeType.
-    /// Can fail if the entry is no terminal (i.e. a non-terminal).
-    ///
-    pub fn text(&amp;self) -&gt; Result&lt;&amp;str, ParserError&gt; {
-        match self {
-            Self::T(t) =&gt; Ok(t.text()),
-            _ =&gt; Err(ParserError::InternalError(format!("{} is no token!", self))),
-        }
-    }
-}
-<span class="boring">}</span></code></pre></pre>
-<p>In your semantic action you exactly know which argument correspond to a terminal or a non-terminal
-symbol. If you want to access the token that contains a concrete terminal you can use one of these
-functions. Non-terminals are of lesser interest because non-terminals are simply nodes with the
-non-terminal's name that represents certain subtrees in the concrete parse-tree. So it is worth to
-consider the following hints.</p>
-<p>A good way to process your grammar is to implement an own typed parse stack in your grammar
-processing item. Then you construct such stack items from the tokens you encounter in your semantic
-actions and push them on your parse stack. They then are something like the <em>results</em> of your
-semantic actions which are collected on the parse stack for further processing. You then can access
-these results of earlier semantic actions later from other semantic actions and construct the parse
-result step by step using them.</p>
-<p>A good demonstration of this approach can be found at the example
-<a href="https://github.com/jsinger67/parol/blob/release1.0/examples/calc/calc_grammar.rs">calc</a>.</p>
-<p>The direction in which the parser derives the symbols of your grammar guarantees that when a
-semantic action of a production is called all elements of the production have been processed before.
-That's why you know the non-terminals are collected and lay on top of your own parse stack.</p>
-<h2 id="semantic-actions-in-auto-generation-mode"><a class="header" href="#semantic-actions-in-auto-generation-mode">Semantic actions in Auto-generation mode</a></h2>
-<blockquote>
-<p>Note that this mode is the default mode in versions greater 1. Actually, it is the only generation
-mode in <code>parol</code> then and has no specific name. If you encounter the terms <code>auto-generation mode</code> or
-<code>auto-gen mode</code> in versions greater 1 you can think of them as the normal way <code>parol</code> works.</p>
-</blockquote>
-<p>The auto-gen mode abstracts away the <a href="AstGeneration.html#the-expanded-grammar">expanded version</a> of
-your grammar. As in <a href="SemanticActions.html#semantic-actions-in-vanilla-mode">vanilla mode</a> the
-<code>parol</code> parser generator creates a trait with functions that represent semantic actions. But here
+<p>All semantic actions are generated for non-terminals of your input grammar, and are typed accordingly.</p>
+<p>The <code>parol</code> parser generator creates a trait with functions that represent semantic actions. Here,
 the semantic actions are typed and they are generated for the <em>non-terminals of your input grammar</em>
 instead of for <em>productions of the <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a></em>.</p>
 <p>You therefore don't have to mess around with <code>ParseTreeType</code> although you still encounter items of
@@ -346,21 +207,20 @@ universally to provide this layer of abstraction by generating the production bo
 actions accordingly.</p>
 <p>This and the automatic AST type inference are the most outstanding properties of <code>parol</code>.</p>
 <p>We will use the example
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto">calc_auto</a> for detailed
-explanations.</p>
+<a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a> for detailed explanations.</p>
 <p>The file
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar_trait.rs">calc_grammar_trait.rs</a>
+<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar_trait.rs">calc_grammar_trait.rs</a>
 contains the generated traits and types we are interested in.</p>
 <p>First we will have a look at the <code>CalcGrammarTrait</code> at the top of this file. For each non-terminal
 of the input grammar
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc.par">calc.par</a> it contains
-exactly one semantic action.</p>
+<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc.par">calc.par</a> it contains exactly
+one semantic action.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>/// Semantic actions trait generated for the user grammar
 /// All functions have default implementations.
 pub trait CalcGrammarTrait&lt;'t&gt; {
-    /// Semantic action for non-terminal 'calc'
+    /// Semantic action for non-terminal 'Calc'
     fn calc(&amp;mut self, _arg: &amp;Calc&lt;'t&gt;) -&gt; Result&lt;()&gt; {
         Ok(())
     }
@@ -368,9 +228,9 @@ pub trait CalcGrammarTrait&lt;'t&gt; {
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The approach taken in this example is quite interesting. We only implement the semantic action for
-the start symbol of our grammar: <em>calc</em>.</p>
+the start symbol of our grammar: <em>Calc</em>.</p>
 <p>The implementation can be found in
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc_grammar.rs</a>.</p>
 <p>Near the end you can find the one and only semantic action we implement here and thereby creating
 the functionality of a calculator language.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -384,36 +244,31 @@ the functionality of a calculator language.</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>But what is the advantage of implementing only the start symbols's semantic action? Well, since the
-start symbol is the root node of each and every concrete parse tree we know, that the generated type
+start symbol is the root node of each and every concrete parse tree, we know that the generated type
 for it should comprise the complete input as the result of the parsing.</p>
 <p>The key to this is the structure of the generated type <code>Calc</code>. It resembles the structure of all
-productions belonging to the non-terminal `calc'. There is actually only one production for calc:</p>
-<pre><code class="language-parol">calc: { instruction ";"^ };
+productions belonging to the non-terminal <code>Calc</code>. There is actually only one production for <code>Calc</code>:</p>
+<pre><code class="language-parol">Calc: { Instruction ";"^ };
 </code></pre>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
-/// Type derived for non-terminal calc
+/// Type derived for non-terminal Calc
 ///
 pub struct Calc&lt;'t&gt; {
     pub calc_list: Vec&lt;CalcList&lt;'t&gt;&gt;,
 }
 <span class="boring">}</span></code></pre></pre>
 <p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
-right-hand side of the production (<code>{ instruction ";"^ }</code>).</p>
+right-hand side of the production (<code>{ Instruction ";"^ }</code>).</p>
 <p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
-<blockquote>
-<p>The reason why boxed types are needed is explained
-<a href="AstGeneration.html#recursive-structure-of-a-grammar">here</a>.</p>
-<p>Also note that in the meantime the very <code>Box</code> here could be optimized away by <code>parol</code>. This is a great example of the evolution of it.</p>
-</blockquote>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>///
 /// Type derived for non-terminal calcList
 ///
 pub struct CalcList&lt;'t&gt; {
-    pub instruction: Box&lt;Instruction&lt;'t&gt;&gt;,
+    pub instruction: Instruction&lt;'t&gt;,
 }
 <span class="boring">}</span></code></pre></pre>
 <p>And in turn the type <code>Instruction</code> looks like this:</p>
@@ -427,28 +282,28 @@ pub enum Instruction&lt;'t&gt; {
     LogicalOr(InstructionLogicalOr&lt;'t&gt;),
 }
 <span class="boring">}</span></code></pre></pre>
-<p>The latter one is an enum with two variants because the non-terminal <code>instruction</code> has two
+<p>The latter one is an enum with two variants because the non-terminal <code>Instruction</code> has two
 productions:</p>
 <pre><code class="language-parol">// ---------------------------------------------------------
 // INSTRUCTION
-instruction: assignment;
-instruction: logical_or;
+Instruction: Assignment;
+Instruction: LogicalOr;
 </code></pre>
 <p>This concept is applied for all non-terminals of your grammar. Actually your grammar became
 <em>typified</em>.</p>
 <p>This means eventually that any variable of type <code>Calc</code> can represent a validly parsed input sentence
 that belongs to the grammar defined by
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc.par">calc.par</a>.</p>
+<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc.par">calc.par</a>.</p>
 <p>You then only have to evaluate the content of this value as done in this calculator example.
 I recommend to study this example more deeply and the approach will become obvious to you.</p>
 <p>As mentioned earlier the implementation can be found here:
-<a href="https://github.com/jsinger67/parol/tree/release1.0/examples/calc_auto/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc_grammar.rs</a>.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="VanillaMode.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="AstGeneration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
@@ -462,7 +317,7 @@ I recommend to study this example more deeply and the approach will become obvio
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="VanillaMode.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="AstGeneration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 

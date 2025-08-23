@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Getting started - The Parol Parser Generator</title>
+        <title>Getting Started - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,58 +177,64 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="getting-started"><a class="header" href="#getting-started">Getting started</a></h1>
+                        <h1 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h1>
 <h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
-<p>Before you can use <code>parol</code> you have to install it.</p>
-<p>Since <code>parol</code> generates Rust code it is assumed that you have a Rust toolchain installed. Otherwise
-head over to <a href="https://rustup.rs/">Rustup</a> or <a href="https://www.rust-lang.org/tools/install">Install Rust</a>
-first.</p>
-<p><code>parol</code> only needs stable Rust.</p>
-<p>Now you should be able to install <code>parol</code> on your platform:</p>
+<p>Before you can use <code>parol</code>, you need to install it.</p>
+<p>Since <code>parol</code> generates Rust code, a Rust toolchain must be installed. If you do not have Rust,
+visit <a href="https://rustup.rs/">Rustup</a> or <a href="https://www.rust-lang.org/tools/install">Install Rust</a>.</p>
+<p><code>parol</code> requires only stable Rust.</p>
+<p>To install <code>parol</code> on your platform, run:</p>
 <pre><code class="language-shell">cargo install parol
 </code></pre>
-<p>To confirm a correct installation invoke this command:</p>
-<pre><code class="language-shell">$ parol -V
-parol 0.10.6
+<p>To verify the installation, execute:</p>
+<pre><code class="language-shell">parol -V
+parol 4.0.1
 </code></pre>
-<p>If you see an error saying the tool couldn't be found please check your PATH variable. It should
-include ~/.cargo/bin.</p>
-<h3 id="the-video"><a class="header" href="#the-video">The video</a></h3>
-<p>If you prefer a more visual introduction, I recommend watching the introductory
-<a href="https://youtu.be/TJMwMqD4XSo">video</a> on YouTube.</p>
-<h2 id="let-parol-generate-a-crate-for-you"><a class="header" href="#let-parol-generate-a-crate-for-you">Let <code>parol</code> generate a crate for you</a></h2>
-<p>We can use the <code>parol new</code> subcommand and let <code>parol</code> create our new project for us.</p>
+<p>If you see an error indicating the tool could not be found, check your PATH variable. It should
+include <code>~/.cargo/bin</code>.</p>
+<h3 id="video-introduction"><a class="header" href="#video-introduction">Video Introduction</a></h3>
+<p>For a visual introduction, watch the <a href="https://youtu.be/TJMwMqD4XSo">introductory video</a> on YouTube.</p>
+<h2 id="generate-a-crate-with-parol"><a class="header" href="#generate-a-crate-with-parol">Generate a Crate with <code>parol</code></a></h2>
+<p>Use the <code>parol new</code> subcommand to create a new project:</p>
 <pre><code class="language-shell">parol new --bin --path ./my_grammar
 </code></pre>
-<p>Then change into the new project's folder and start the initial build. Here <code>parol</code> is generating
-two files from the initial grammar definition.</p>
+<p>Change into the new project folder and start the initial build. <code>parol</code> will generate two files from
+the initial grammar definition.</p>
 <pre><code class="language-shell">cd ./my_grammar
 cargo build
 </code></pre>
-<p>And run the test with the generated parser:</p>
-<pre><code class="language-shell">$ cargo run ./test.txt
-    Finished dev [unoptimized + debuginfo] target(s) in 0.20s
+<blockquote>
+<p>You can safely ignore the <code>#[warn(unused_imports)]</code> warning for now. It will disappear as the
+grammar receives more content.</p>
+</blockquote>
+<p>Run the test with the generated parser:</p>
+<pre><code class="language-shell">cargo run ./test.txt
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.87s
      Running `target\debug\my_grammar.exe ./test.txt`
-Parsing took 4 milliseconds.
+Parsing took 0 milliseconds.
 Success!
-MyGrammar { my_grammar: Token { symbol: "Hello world!", token_type: 5, location: Location { line: 4, column: 5, length: 12, start_pos: 0, pos: 97, file_name: "./test.txt" } } }
+MyGrammar { my_grammar: Token { text: "Hello world!", token_type: 5, location: Location {
+start_line: 4, start_column: 5, end_line: 4, end_column: 17, start: 62, end: 74, file_name:
+"./test.txt" }, token_number: 2 } }
 </code></pre>
-<p><code>parol</code> has generated a full fledged parser with AST types suitable for your grammar description!</p>
-<p>Now you can open your favorite editor</p>
+<p><code>parol</code> has generated a complete parser with AST types suitable for your grammar description.</p>
+<p>Now, open your preferred editor:</p>
 <pre><code class="language-shell">code .
 </code></pre>
-<p>and adapt the grammar description in the file <code>my_grammar.par</code> to fit your requirements. Any
-subsequent invocations of <code>cargo build</code> will trigger <code>parol</code> to generate the derived sources
-automatically if the grammar description file <code>my_grammar.par</code> has been changed.</p>
+<p>Edit the grammar description in <code>my_grammar.par</code> to fit your requirements. Any subsequent invocation
+of <code>cargo build</code> will trigger <code>parol</code> to regenerate the derived sources automatically if
+<code>my_grammar.par</code> has changed.</p>
 <p><strong>This is all you need to set up a working development environment.</strong></p>
 <blockquote>
-<h2 id="vs-code-extension-and-language-server"><a class="header" href="#vs-code-extension-and-language-server">VS Code extension and Language Server</a></h2>
-<p>I provide a VS Code extension <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">parol-vscode</a>.</p>
-<p>Please install this extension from VS Code
-<a href="https://marketplace.visualstudio.com/items?itemName=jsinger67.parol-vscode">marketplace</a>.
-It provides syntax highlighting, folding and language icons and will surely be useful for you.</p>
-<p>The extension utilizes a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a> that you have
-to install separately.</p>
+<h2 id="vs-code-extension-and-language-server"><a class="header" href="#vs-code-extension-and-language-server">VS Code Extension and Language Server</a></h2>
+<p>A VS Code extension, <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">parol-vscode</a>,
+is available.</p>
+<p>Install this extension from the VS Code
+<a href="https://marketplace.visualstudio.com/items?itemName=jsinger67.parol-vscode">Marketplace</a>.
+It provides syntax highlighting, folding, and language icons, which will be useful for you.</p>
+<p>The extension utilizes a
+<a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Language Server</a> that must be
+installed separately.</p>
 <pre><code class="language-shell">cargo install --force parol-ls
 </code></pre>
 </blockquote>

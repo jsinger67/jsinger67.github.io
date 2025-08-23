@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Grammar description syntax - The Parol Parser Generator</title>
+        <title>Grammar Description Syntax - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -193,30 +193,20 @@ comments.</p>
 <p>As opposed to EBNF you use C-like line comments starting with two slashes (//) and bock comments
 (/* ... */) in PAR files. This is a result of the close relationship between PAR grammar and
 bison's grammar.</p>
-<blockquote>
-<p>As of version 0.22.0 <code>parol</code> doesn't simply discard language comments. They are provided during
-parse process via a new method <code>&lt;UserType&gt;GrammarTrait::on_comment_parsed</code> which is called for each
+<p><code>parol</code> doesn't simply discard language comments. They are provided during
+parse process via a new method <code>&lt;UserType&gt;GrammarTrait::on_comment</code> which is called for each
 single comment in order of their appearance each time before the parser consumes a normal token from
-token stream.</p>
-<p>The method is default implemented and the user have to provide an own implementation if she is
+token stream.
+The method is default implemented and the user have to provide an own implementation if she is
 interested in language comments.</p>
-<p>This is a minimal support but can greatly improve the usability. Also note that this comment
-handling is currently only supported in <code>parols</code>'s auto-generation mode.</p>
-<p>Any feedback is appreciated.</p>
-</blockquote>
-<hr />
-<blockquote>
-<p>In version 2 <code>&lt;UserType&gt;GrammarTrait::on_comment_parsed</code> has been renamed to
-<code>&lt;UserType&gt;GrammarTrait::on_comment</code> for clarity</p>
-</blockquote>
-<hr />
+<p>This is a minimal support but can greatly improve the usability.</p>
 <h2 id="defining-the-grammar-type"><a class="header" href="#defining-the-grammar-type">Defining the grammar type</a></h2>
 <p>In the global header section you can define the grammar type you want to use in your grammar
 description.</p>
 <p>The default grammar type is LL(k) and can be omitted.</p>
 <pre><code class="language-parol">%grammar_type 'LL(k)'
 </code></pre>
-<p>You have to option to use LALR(1) grammar type this way.</p>
+<p>You have the option to use LALR(1) grammar type this way.</p>
 <pre><code class="language-parol">%grammar_type 'LALR(1)'
 </code></pre>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case sensitivity</a></h2>
@@ -258,55 +248,69 @@ say:</p>
 <p>With this trick you define a so called "primary non-terminal for a terminal" (I coined it this way)
 that instructs the name generation to name the terminal "Assign".</p>
 <h3 id="terminal-representation"><a class="header" href="#terminal-representation">Terminal representation</a></h3>
-<p>As of version 0.14.0 <code>parol</code> supports three different styles of terminal representations, all of
-them being valid and allowed.</p>
+<p><code>parol</code> supports three different styles of terminal representations, all of them being valid and
+allowed.</p>
 <ul>
-<li>The legacy syntax (<code>"..."</code>). These terminals are treated as if they were regular expressions.</li>
-<li>New single quoted string literals (<code>'..'</code>) are literal or raw strings. The user doesn't need to
-escape any regex meta character. This is used when you don't want to deal with regexes and only use
-plain text. E.g.: <code>BlockBegin: '{'</code></li>
-<li>New regular expression strings (<code>/../</code>), behaves exactly like the old double quoted string but
-better conveys the intent. E.g.: <code>Digits: /[\d]+/</code></li>
+<li>The <strong>string syntax</strong> (<code>"..."</code>). These terminals are treated as if they were <strong>regular expressions.</strong></li>
+<li>The <strong>single quoted</strong> string literals (<code>'..'</code>) are <strong>literals or raw strings</strong>. The user doesn't
+need to escape any regex meta character. This is used when you don't want to deal with regexes and
+only use plain text. E.g.: <code>BlockBegin: '{'</code></li>
+<li>The <strong>regular expression strings</strong> (<code>/../</code>), behaves exactly like the double quoted string, i.e.
+they are treated as <strong>regular expressions</strong> but this style better conveys the intent. E.g.:
+<code>Digits: /[\d]+/;</code></li>
 </ul>
-<p>Internally <code>parol</code> creates scanners on the basis of the Rust regex crate and all terminals are
-embedded in a regular expression eventually. You should be aware of this if you get strange errors
+<p>Internally <code>parol</code> creates scanners on the basis of the <code>scnr2</code> crate and all terminals are
+expressed as regular expressions eventually. You should be aware of this if you get strange errors
 from regex generation and want to understand the problem.</p>
 <p>Here is an example for a terminal in regular expression form:</p>
 <pre><code class="language-parol">AddOperator: /\+|-/;
 </code></pre>
 <h3 id="terminal-conflicts"><a class="header" href="#terminal-conflicts">Terminal conflicts</a></h3>
 <ul>
-<li>In case of conflicts between different terminals <em>the first seen will win</em></li>
+<li>Parol's scanner follows the longest match rule</li>
+<li>Conflicts can only occur, if the matched tokens have the same length and are accepted by more than
+one terminal type. In case of such a conflict between different terminals, terminals defined earlier
+in the grammar have higher priority than those defined later. This allows you to influence the
+priority of tokens with equal length. In all other cases, tokens with the longest match are
+preferred.</li>
 </ul>
-<p>The last point needs a more detailed explanation.
-It's best to show an example for such a situation.
-Say you have two terminals "-" and "--", <em>minus</em> and <em>decrement</em>. The generated scanner is then
-based on the following regular expression:</p>
-<pre><code class="language-regexp">/-|--/
+<p>For example, if you have two terminals "-" and "--", <em>Minus</em> and <em>Decr</em>, the scanner will match
+based on the longest match basis:</p>
+<pre><code class="language-parol">Decr: /--/
+    ;
+
+Minus
+    : /-/
+    ;
+
 </code></pre>
-<p>The Rust regex will now match two times <em>minus</em> when actually a <em>decrement</em> operator should be
-detected.
-It behaves here differently than a classic scanner/lexer like Lex that obeys the <em>longest match</em>
-strategy.</p>
-<p>Fortunately there is a simple way to achieve what we want. We just need a resulting regular
-expression with a different order:</p>
-<pre><code class="language-regexp">/--|-/
+<p>An input string <code>-----</code> will match the decrement operator twice and then the minus operator once.</p>
+<p>As an example for tokens with the same length consider following terminal definitions:</p>
+<pre><code class="language-parol">// ❌
+Ident: /[a-zA-Z_][a-zA-Z0-9_]*/
+    ;
+
+If: 'if'
+    ;
 </code></pre>
-<p>This will perfectly do the job.</p>
-<p>To get such an order the <em>decrement</em> terminal has to be defined <strong>before</strong> the <em>minus</em> terminal as
-in the following snippet.</p>
-<pre><code class="language-parol">decrement: /--/
-;
-...
-minus: /-/
-;
+<p>In case of same length, the scanner will match based on the order of definition:</p>
+<p>On input <code>if</code> it will match the <code>Ident</code> first. To make this work you have to move the terminal <code>If</code>
+before the more general <code>Ident</code>:</p>
+<pre><code class="language-parol">// ✅
+If: 'if'
+    ;
+
+Ident: /[a-zA-Z_][a-zA-Z0-9_]*/
+    ;
 </code></pre>
-<p>Thats all.</p>
-<p>With this simple but effective means you have the control over terminal conflicts.</p>
+<p>Defining <em>If</em> before <em>Ident</em> ensures the correct priority.</p>
+<h4 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h4>
+<p>❗ These two mechanisms, <strong>longest match rule</strong> and <strong>priority by order</strong>, gives you control over
+terminal conflicts.</p>
 <h3 id="terminals-that-matches-an-empty-string"><a class="header" href="#terminals-that-matches-an-empty-string">Terminals that matches an empty string</a></h3>
 <p>Please note that terminals should always match non-empty text portions. This means that you have to
 avoid terminals like this:</p>
-<pre><code class="language-parol">/a?/, /a*/, /\b/
+<pre><code class="language-parol">/a?/, /a*/
 </code></pre>
 <p>Internally the tokenizer will enter a loop and match the empty string over and over again without
 making progress in the input. Currently there is no check for this scenario in <code>parol_runtime</code>.</p>
@@ -370,61 +374,18 @@ in angle brackets. Like this:</p>
 </code></pre>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
-<blockquote>
-<p><strong>Note for Parol v4:</strong>
-Parser-based scanner switching is no longer supported. All scanner switching must now be handled by the scanner itself using scanner-based switching.
-Please update your grammars accordingly. See <a href="./ParolVersion4.html">Changes in version 4</a> for migration details.</p>
-</blockquote>
-<h3 id="parser-bases-scanner-switching"><a class="header" href="#parser-bases-scanner-switching">Parser-bases scanner switching</a></h3>
-<p>The first way to control scanner states is to define switching directives within your productions.
-This way can only be used for LL(k) grammars because the parser has full knowledge about which
-production to handle next when certain input has been encountered from left to right.</p>
-<p>Parser-bases scanner state switching is initiated within your productions like in the following two
-examples:</p>
-<pre><code class="language-parol">String: StringDelimiter %sc(String) StringContent StringDelimiter %sc();
-
-</code></pre>
-<p>or</p>
-<pre><code class="language-parol">String: StringDelimiter %push(String) StringContent StringDelimiter %pop();
-
-</code></pre>
-<p>The <code>%sc</code> instruction is used to switch directly to the state named in the parentheses. The INITIAL
-state can be omitted as seen in the second occurrence of the first example, i.e. <code>%sc()</code> and
-<code>%sc(INITIAL)</code> are equivalent.</p>
-<p>The <code>%push</code> instruction is used to push the index of the current scanner on the internal scanner
-stack and to switch to a scanner configuration with the given index in parentheses.</p>
-<p>The <code>%pop</code> instruction is used to pop the index of the scanner pushed before and to switch to the
-scanner configuration with that index.</p>
-<blockquote>
-<p>Note, that <code>%push</code> and <code>%pop</code> instructions should be balanced. This means that in one context use
-<strong>only one</strong> of the combinations <code>%push(S1)</code>/<code>%pop</code> and <code>%sc(&lt;S1&gt;)</code>/<code>%sc(&lt;S2&gt;)</code>. <code>%push</code>/<code>%pop</code>
-provides a (call) stack semantics over scanner states whereas <code>%sc</code>/<code>%sc</code> can be used to represent
-scanner state graphs semantics. Mixing both semantics should be avoided or should at least be
-carefully considered.</p>
-</blockquote>
-<blockquote>
-<p>Note, that the provision of lookahead tokens will be made with the current active scanner and may
-fail if a token is not known by it. In most cases this can be circumvented by an appropriate grammar
-formulation. If this is not possible consider to use <code>Scanner-bases scanner switching</code> instead.</p>
-</blockquote>
-<p>You may have look at example <code>scanner_states</code> that demonstrates the handling of scanner states.</p>
-<h3 id="scanner-based-scanner-switching"><a class="header" href="#scanner-based-scanner-switching">Scanner-based scanner switching</a></h3>
-<blockquote>
-<p><strong>Note for Parol v4:</strong>
-Scanner-based switching is now the only supported method for scanner state transitions.
-All features and examples referring to parser-based switching are deprecated as of v4.</p>
-</blockquote>
-<p>LR grammars reduce the parser stack from the right side and thus you can't decide the scanner state
-switching from the perspective of the parser. The tokens are already read and pushed on the parse
-stack before it can be decided what production to reduce on them. This means scanner state switching
-must work different here.
-When incorporating the scanner state switching into the scanner itself the state can be chosen as
-early as possible solely from the current state the scanner is in and the token read next.
-The good new is that this kind of scanner switching works for LL parsers too and most LL(k) grammars
-can be adopted to use scanner-based scanner switching.</p>
-<p>Scanner-based scanner switching is defined solely in the header of the grammar file right where the
-scanners are defined.</p>
-<p>You use the <code>%on</code> and <code>%enter</code> directives to control it (snippets taken from the <code>basic</code> example):</p>
+<h3 id="scanner-switching"><a class="header" href="#scanner-switching">Scanner switching</a></h3>
+<p>Scanner-based scanner switching in Parol is managed by the scanner using the <code>%enter</code>, <code>%push</code>, and
+<code>%pop</code> directives within the scanner specification:</p>
+<ul>
+<li><code>%enter</code>: Switches the scanner to a specific mode, replacing the current mode.</li>
+<li><code>%push</code>: Pushes the current mode onto a stack and enters a new mode.</li>
+<li><code>%pop</code>: Returns to the previous mode by popping the mode stack.</li>
+</ul>
+<p>These directives ensure that scanner mode switching is handled consistently and reliably, preventing
+token buffer desynchronization in LL(k) grammars with k &gt; 1. All scanner-related features are based
+on the <a href="https://crates.io/crates/scnr2"><code>scnr2</code></a> crate.</p>
+<p>Example usage:</p>
 <pre><code class="language-parol">%on Rem %enter Cmnt
 %on If, AssignOp, Print %enter Expr
 
@@ -437,17 +398,12 @@ scanners are defined.</p>
     %on Then, Goto, EndOfLine %enter INITIAL
 }
 </code></pre>
-<p>After the <code>%on</code> directive you can name a list of primary non-terminals which only contain the
-terminal like this:</p>
-<pre><code class="language-parol">Rem : 'REM'^;
-</code></pre>
-<p>After the <code>%enter</code> directive you name the target scanner state.</p>
-<p>You also may have look at examples <code>scanner_states_lr</code> for a simple demonstration and at example
-<code>basic</code> for a more advanced one.</p>
-<blockquote>
-<p><em>Be aware that mixing of both parser-bases and scanner-based scanner state switching in one grammar
-file is not allowed and will result in errors.</em></p>
-</blockquote>
+<p>After the <code>%on</code> directive, specify a list of primary non-terminals. After the <code>%enter</code> directive,
+specify the target scanner state. <code>%push</code> and <code>%pop</code> provide stack-based mode management.</p>
+<p>Mixing parser-based and scanner-based switching in one grammar file is not allowed and will result
+in errors.</p>
+<p>Parol generates all data required by <code>scnr2</code> to construct valid and efficient scanners. Users do not
+need to understand the internal configuration of <code>scnr2</code>.</p>
 <h2 id="controlling-the-ast-generation"><a class="header" href="#controlling-the-ast-generation">Controlling the AST generation</a></h2>
 <h3 id="omitting-grammar-symbols-from-the-ast"><a class="header" href="#omitting-grammar-symbols-from-the-ast">Omitting grammar symbols from the AST</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (<code>^</code>). This
@@ -556,9 +512,12 @@ corresponding member in the generated struct should be named.</p>
 for UserTypeName will receive the name <code>nt_type</code> in the generated struct type for this production.</p>
 <h2 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h2>
 <p>Semantic actions are strictly separated from your grammar description.
-You will use a generated trait with default implementations for each production of your grammar. You
-can implement this trait in your grammar processing item and provide concrete implementations for
-those productions you are interested in.</p>
+You will use a generated trait with default implementations for each non-terminal of your grammar.
+You can implement this trait in your grammar processing item and provide concrete implementations
+for those non-terminals you are interested in.</p>
+<p>In the chapter <a href="./OperatorPrecedence.html">Operator Precedence</a> there are some examples on how to
+implement simple semantic actions.</p>
+<p>A separate chapter <a href="./SemanticActions.html">Semantic Actions</a> deals more deeply with this topic.</p>
 
                     </main>
 

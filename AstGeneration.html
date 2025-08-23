@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>AST generation - The Parol Parser Generator</title>
+        <title>AST Generation - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,71 +177,54 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="ast-generation"><a class="header" href="#ast-generation">AST generation</a></h1>
-<p><code>parol</code> can be instructed to generate all types your grammar implies automatically. It therefore
-analyzes all productions in your grammar.</p>
-<h2 id="grammar-transformation"><a class="header" href="#grammar-transformation">Grammar transformation</a></h2>
-<p>The first step is to canonicalize your grammar into a
-standard format applying the following transformations.</p>
+                        <h1 id="ast-generation"><a class="header" href="#ast-generation">AST Generation</a></h1>
+<p><code>parol</code> can automatically generate all types implied by your grammar. It analyzes every production in your grammar.</p>
+<h2 id="grammar-transformation"><a class="header" href="#grammar-transformation">Grammar Transformation</a></h2>
+<p>The first step is to canonicalize your grammar by applying the following transformations:</p>
 <ul>
-<li>All EBNF constructs, i.e. optional elements, repetitions and groupings are substituted by
-equivalent representations.
+<li>All EBNF constructs—optional elements, repetitions, and groupings—are replaced with equivalent representations:
 <ul>
-<li>A: [B]; =&gt; A: BOpt; BOpt: B; BOpt: ;</li>
-<li>A: {B}; =&gt; A: BList; BList: B BList; BList: ;</li>
-<li>A: (B); =&gt; A: BGroup; BGroup: B;</li>
+<li><code>A: [B];</code> → <code>A: BOpt; BOpt: B; BOpt: ;</code></li>
+<li><code>A: {B};</code> → <code>A: BList; BList: B BList; BList: ;</code></li>
+<li><code>A: (B);</code> → <code>A: BGroup; BGroup: B;</code></li>
 </ul>
 </li>
-<li>Alternations are propagated to multiple productions.
+<li>Alternations are expanded into multiple productions:
 <ul>
-<li>A: B | C; =&gt; A: B; A: C;</li>
+<li><code>A: B | C;</code> → <code>A: B; A: C;</code></li>
 </ul>
 </li>
 </ul>
-<p>These transformations are applied iteratively until all EBNF constructs are replaced.</p>
-<p>Note that the transformations applied on LR grammars are slightly different, but the principle is
-the same.</p>
-<h2 id="sanity-checks"><a class="header" href="#sanity-checks">Sanity checks</a></h2>
-<p>Then <code>parol</code> checks this pre-transformed input grammar for several properties that prevent a
-successful processing. Those unwanted properties are</p>
+<p>These transformations are applied iteratively until all EBNF constructs are eliminated.</p>
+<p>Note: Transformations for LR grammars differ slightly, but the principle remains the same.</p>
+<h2 id="sanity-checks"><a class="header" href="#sanity-checks">Sanity Checks</a></h2>
+<p>Next, <code>parol</code> checks the transformed grammar for properties that would prevent successful processing:</p>
 <ul>
-<li>Left-recursions</li>
+<li>Left recursion</li>
 <li>Non-productive non-terminals</li>
 <li>Unreachable non-terminals</li>
 </ul>
-<p>If the grammar does not have such properties the next step is to left-factor this grammar form. This
-step is crucial for decreasing the number of necessary lookahead symbols.</p>
-<h2 id="the-expanded-grammar"><a class="header" href="#the-expanded-grammar">The Expanded grammar</a></h2>
-<p>This finally transformed grammar is the basis for the parser generation and is typically written to
-file for later reference. By convention this 'expanded' grammar is stored to files named
-&lt;original-name&gt;-exp.par.</p>
-<p>This expanded grammar is the basis for parser generation.</p>
-<h2 id="type-inference"><a class="header" href="#type-inference">Type inference</a></h2>
-<p>Having such a transformed grammar all productions have the form
-\[v: s*; \]
-where \(v \epsilon V, s \epsilon (V \cup \Sigma)\), \(V\) is the set of non-terminals,
-\(\Sigma\) is the set of terminals.</p>
-<p>The relation of the generated productions to their original EBNF constructs is actually lost at this
-point.</p>
-<p>But because we need the information if a set of productions was originated from, e.g. an optional
-construct (<code>[...]</code>) <code>parol</code>conveys these relationship during the whole transformation process to be
-able to infer it into a Rust <code>Option&lt;T&gt;</code> eventually.</p>
-<p>To explain it using the form of transformation shown above we could write this:</p>
-<p><code>A: [B]; =&gt; A: BOpt; BOpt: B; BOpt: ; =&gt; typeof A = Option&lt;typeof B&gt;</code></p>
-<p>This step leads directly to a solution if non-terminal <code>A</code> has only one production.</p>
-<p>In this case the the type of <code>A</code> is</p>
+<p>If none of these issues are present, the grammar is left-factored to reduce the number of required lookahead symbols.</p>
+<h2 id="the-expanded-grammar"><a class="header" href="#the-expanded-grammar">The Expanded Grammar</a></h2>
+<p>The fully transformed grammar serves as the basis for parser generation and is typically saved for reference. By convention, this "expanded" grammar is stored in files named <code>&lt;original-name&gt;-exp.par</code>.</p>
+<h2 id="type-inference"><a class="header" href="#type-inference">Type Inference</a></h2>
+<p>With the transformed grammar, all productions take the form:</p>
+<pre><code>[v: s*;]
+</code></pre>
+<p>where (v \in V, s \in (V \cup \Sigma)), (V) is the set of non-terminals, and (\Sigma) is the set of terminals.</p>
+<p>At this stage, the relationship between generated productions and their original EBNF constructs is lost.</p>
+<p>However, since it is necessary to know if a set of productions originated from an optional construct (<code>[...]</code>), <code>parol</code> maintains this relationship throughout the transformation process. This allows it to infer types such as Rust's <code>Option&lt;T&gt;</code>.</p>
+<p>For example, using the transformation above:</p>
+<p><code>A: [B];</code> → <code>A: BOpt; BOpt: B; BOpt: ;</code> → <code>typeof A = Option&lt;typeof B&gt;</code></p>
+<p>If non-terminal <code>A</code> has only one production, its type is:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct A {
     b: Option&lt;B&gt;
 }
 <span class="boring">}</span></code></pre></pre>
-<p>We must use a <code>struct</code> here because this patterns should work for productions with \(n\)
-elements on its right-hand side. For each such element we then introduce a separate member into the
-struct.</p>
-<p>If non-terminal <code>A</code> has more than one productions the resulting type of <code>A</code> will be a Rust <code>enum</code>
-type with \(n\) enum variants for \(n\) productions, e.g.:</p>
-<p><code>A: B | C; =&gt; A: B; A: C; =&gt;</code></p>
+<p>A <code>struct</code> is used because productions may have multiple elements on the right-hand side, each becoming a separate member.</p>
+<p>If non-terminal <code>A</code> has multiple productions, its type becomes a Rust <code>enum</code> with one variant per production:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct B {
@@ -256,48 +239,29 @@ enum A {
     A1(C),
 }
 <span class="boring">}</span></code></pre></pre>
-<p>When finally all types for all non-terminals are inferred <code>parol</code> generates an overall AST type.
-This is also a Rust <code>enum</code>. It comprises all non-terminal types of the grammar and provides exactly
-one enum variant for each of them. This type is mainly used by the parser itself to be able to
-instantiate a typed parse stack. The user rarely have to deal with this AST <code>enum</code>.</p>
-<h3 id="recursive-structure-of-a-grammar"><a class="header" href="#recursive-structure-of-a-grammar">Recursive structure of a grammar</a></h3>
-<p>A context free grammar is typically defined using recursive constructs. But you can't define types
-in Rust that are directly recursive because this would lead to an infinitive type size.</p>
-<p>To cope with this limitation <code>parol</code> generates boxed types for non-terminals when introducing
-elements to <code>struct</code>s, e.g.:</p>
+<p>Once all types for non-terminals are inferred, <code>parol</code> generates an overall AST type as a Rust <code>enum</code>. This enum contains one variant for each non-terminal type and is mainly used by the parser to instantiate a typed parse stack. Users rarely need to interact with this AST enum directly.</p>
+<h3 id="recursive-structure-of-a-grammar"><a class="header" href="#recursive-structure-of-a-grammar">Recursive Structure of a Grammar</a></h3>
+<p>Context-free grammars are typically defined using recursive constructs. However, Rust does not allow directly recursive types, as this would result in infinite type sizes.</p>
+<p>To address this, <code>parol</code> generates boxed types for non-terminals when adding elements to structs:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>struct A {
     b: Box&lt;B&gt;
 }
 <span class="boring">}</span></code></pre></pre>
-<p>This results in finite type sizes.</p>
-<p>Note that <code>parol</code> has a way to minimize the use of boxed types in the generated parser.
-The <code>parol</code> tool supports a new command line switch (-b, --min_boxes) that enables the minimization
-of used boxes in generated data structures. The <code>parol::build::Builder</code> also provides a new method
-<code>minimize_boxed_types()</code> that you can call in your build scripts.</p>
-<p><code>parol</code> then determines where no recursions can occur by applying extra calculations on the
-structure of the grammar.</p>
-<h2 id="manage-ast-generation"><a class="header" href="#manage-ast-generation">Manage AST generation</a></h2>
-<h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of elements</a></h3>
-<p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (^). This instructs
-<code>parol</code> to not propagate them to the AST type, e.g.:</p>
+<p>This ensures finite type sizes.</p>
+<p><code>parol</code> can minimize the use of boxed types in the generated parser. The tool supports a command-line switch (<code>-b</code>, <code>--min_boxes</code>) to enable box minimization. The <code>parol::build::Builder</code> also provides a <code>minimize_boxed_types()</code> method for use in build scripts.</p>
+<p><code>parol</code> determines where recursion cannot occur by analyzing the grammar structure.</p>
+<h2 id="managing-ast-generation"><a class="header" href="#managing-ast-generation">Managing AST Generation</a></h2>
+<h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of Elements</a></h3>
+<p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (<code>^</code>) to prevent them from being included in the AST type. For example:</p>
 <pre><code class="language-parol">Group: '('^ Alternations ')'^;
 </code></pre>
-<p>The AST type for the symbol <code>Group</code> will then only contain a member for the non-terminal
-<code>Alternations</code>. The parentheses are suppressed because they have no special purpose for the grammar
-processing itself.</p>
-<h3 id="assigning-user-types"><a class="header" href="#assigning-user-types">Assigning user types</a></h3>
-<p>You can specify a user type to be inserted into the AST structure at the place where the symbol
-would otherwise had the originally generated type.
-Add after a grammar symbol a colon followed by a user type name to instruct <code>parol</code> to use this type
-instead. In your language implementation you have to provide fallible conversions from references of
-the original generated types (<code>&amp;T</code>) to your types (<code>U</code>) by implementing the trait
-<code>TryFrom&lt;&amp;T&gt; for U</code>. An examples can be found in the <code>list_auto</code> example.
-You can also define aliases for the user type names by inserting as many <code>%user_type</code> directives as
-you want. Then use these aliases behind the colons.</p>
-<p>You may have look at example <a href="https://github.com/jsinger67/parol/blob/6800c3060bad0df033e55cf113cfd16e860a5373/examples/list_auto/list.par">list_auto</a>
-that demonstrates the handling of user types.</p>
+<p>The AST type for <code>Group</code> will only contain a member for the non-terminal <code>Alternations</code>. The parentheses are omitted since they are not needed for grammar processing.</p>
+<h3 id="assigning-user-types"><a class="header" href="#assigning-user-types">Assigning User Types</a></h3>
+<p>You can specify a user type to be inserted into the AST structure in place of the automatically generated type. Add a colon followed by a user type name after a grammar symbol to instruct <code>parol</code> to use this type. In your implementation, provide fallible conversions from references of the original generated types (<code>&amp;T</code>) to your types (<code>U</code>) by implementing the trait <code>TryFrom&lt;&amp;T&gt; for U</code>. See the <code>list_auto</code> example for details.</p>
+<p>You can also define aliases for user type names using <code>%user_type</code> directives. Use these aliases after the colons.</p>
+<p>See the <a href="https://github.com/jsinger67/parol/blob/6800c3060bad0df033e55cf113cfd16e860a5373/examples/list_auto/list.par">list_auto example</a> for user type handling:</p>
 <pre><code class="language-parol">%start List
 %title "A possibly empty comma separated list of integers"
 %comment "A trailing comma is allowed."
@@ -311,38 +275,30 @@ Items: Num {","^ Num};
 Num: "0|[1-9][0-9]*": Number;
 TrailingComma: [","^];
 </code></pre>
-<p>In this example grammar the terminal in the production <code>Num</code> is assigned to the user type <code>Number</code>
-which in turn is a shorthand for <code>crate::list_grammar::Number</code>. Also the non-terminal <code>Items</code> is
-assigned to the user type <code>Numbers</code> which in turn is a shorthand for <code>crate::list_grammar::Numbers</code>.</p>
-<p>The parser generator substitutes the automatically inferred type in the type of the production by
-the user provided one and the parser calls the conversion form the original type to the user type at
-parse time.</p>
-<p>The original type is the one of the source item in the grammar - terminal or non-terminal. Please
-have a look at the generated semantic action of the internal wrapper for production 1 of the
-expanded grammar <code>list-exp.par</code> which can be found in also generated traits file
-<code>examples\list_auto\list_grammar_trait.rs</code>:</p>
+<p>In this grammar, the terminal in the <code>Num</code> production is assigned to the user type <code>Number</code>, which is an alias for <code>crate::list_grammar::Number</code>. The non-terminal <code>Items</code> is assigned to the user type <code>Numbers</code>, an alias for <code>crate::list_grammar::Numbers</code>.</p>
+<p>The parser generator replaces the automatically inferred type with the user-provided type and calls the conversion from the original type to the user type during parsing.</p>
+<p>The original type is the type of the source item in the grammar—terminal or non-terminal. See the generated semantic action for production 1 of the expanded grammar <code>list-exp.par</code> in the traits file <code>examples\list_auto\list_grammar_trait.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>    /// Semantic action for production 1:
-    ///
-    /// ListOpt /* Option&lt;T&gt;::Some */: Items : Numbers;
-    ///
-    #[parol_runtime::function_name::named]
-    fn list_opt_0(&amp;mut self, _items: &amp;ParseTreeType&lt;'t&gt;) -&gt; Result&lt;()&gt; {
-        let context = function_name!();
-        trace!("{}", self.trace_item_stack(context));
-        let items = pop_item!(self, items, Items, context);
-        let list_opt_0_built = ListOpt {
-            items: (&amp;items)
-                .try_into()
-                .map_err(parol_runtime::ParolError::UserError)?,
-        };
-        self.push(ASTType::ListOpt(Some(Box::new(list_opt_0_built))), context);
-        Ok(())
-    }
+</span>/// Semantic action for production 1:
+///
+/// ListOpt /* Option&lt;T&gt;::Some */: Items : Numbers;
+///
+#[parol_runtime::function_name::named]
+fn list_opt_0(&amp;mut self, _items: &amp;ParseTreeType&lt;'t&gt;) -&gt; Result&lt;()&gt; {
+    let context = function_name!();
+    trace!("{}", self.trace_item_stack(context));
+    let items = pop_item!(self, items, Items, context);
+    let list_opt_0_built = ListOpt {
+        items: (&amp;items)
+            .try_into()
+            .map_err(parol_runtime::ParolError::UserError)?,
+    };
+    self.push(ASTType::ListOpt(Some(Box::new(list_opt_0_built))), context);
+    Ok(())
+}
 <span class="boring">}</span></code></pre></pre>
-<p>At the line after the trace the original item is popped from the parse stack. It has the Rust type
-<code>Items</code>:</p>
+<p>After tracing, the original item is popped from the parse stack. Its Rust type is <code>Items</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>/// Type derived for non-terminal Items
@@ -351,10 +307,8 @@ pub struct Items {
     pub items_list: Vec&lt;ItemsList&gt;,
 }
 <span class="boring">}</span></code></pre></pre>
-<p>Then later at the construction of the <code>ListOpt</code> structure the conversion to the user's type is
-called: <code>.items((&amp;items).try_into()</code>.</p>
-<p>The <code>TryFrom</code> trait is provided by the user. Please see <code>examples\list_auto\list_grammar.rs</code> for
-that:</p>
+<p>When constructing the <code>ListOpt</code> structure, the conversion to the user type is called: <code>.items((&amp;items).try_into())</code>.</p>
+<p>The <code>TryFrom</code> trait is provided by the user. See <code>examples\list_auto\list_grammar.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl TryFrom&lt;&amp;Items&gt; for Numbers {
@@ -371,9 +325,8 @@ that:</p>
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>This is an example how non-terminal types are converted into user types.</p>
-<p>The easier variant is the conversion of a terminal type (i.e. a <code>Token</code>) into a user type. You can
-find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
+<p>This demonstrates how non-terminal types are converted into user types.</p>
+<p>For terminals (tokens), conversion is simpler. See <code>examples\list_auto\list_grammar.rs</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; TryFrom&lt;&amp;Token&lt;'t&gt;&gt; for Number {
@@ -384,17 +337,11 @@ find an example also in <code>examples\list_auto\list_grammar.rs</code>:</p>
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>Here the scanned text of the token is accessed using the method <code>text</code> of the <code>Token</code> type that was
-imported from the <code>parol_runtime</code>crate. This text is then parsed into an <code>u32</code> type and finally
-wrapped into a <code>Number</code>type which is a <em>newtype</em> for <code>u32</code>.</p>
-<p>By implementing <code>TryFrom</code> traits for your user type you can integrate them easily into the parse
-process.</p>
-<p>There exist some examples that can help to become familiar with this concept. Maybe you would like
-to have a look at my rudimentary
-<a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
+<p>Here, the scanned text of the token is accessed using the <code>text</code> method of the <code>Token</code> type from <code>parol_runtime</code>. The text is parsed into a <code>u32</code> and wrapped in a <code>Number</code> newtype.</p>
+<p>By implementing <code>TryFrom</code> traits for your user types, you can easily integrate them into the parse process.</p>
+<p>Several examples are available to help you become familiar with this concept. You may also review the <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
 <blockquote>
-<p>For a more complete list of the ways to control the AST type generation, please see here:
-<a href="./ParGrammar.html#controlling-the-ast-generation">Controlling the AST generation</a></p>
+<p>For a complete list of ways to control AST type generation, see: <a href="./ParGrammar.html#controlling-the-ast-generation">Controlling the AST generation</a></p>
 </blockquote>
 
                     </main>
@@ -405,7 +352,7 @@ to have a look at my rudimentary
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="VanillaMode.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="SemanticActions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -419,7 +366,7 @@ to have a look at my rudimentary
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="VanillaMode.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="SemanticActions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
