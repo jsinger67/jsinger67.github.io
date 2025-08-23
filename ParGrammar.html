@@ -419,7 +419,7 @@ Add after a grammar symbol a colon followed by a user type name to instruct <cod
 instead. In your language implementation you have to provide fallible conversions from references of
 the original generated types (<code>&amp;T</code>) to your types (<code>U</code>) by implementing the trait
 <code>TryFrom&lt;&amp;T&gt; for U</code>.</p>
-<p>An examples can be found in the <code>list_auto</code> example.</p>
+<p>An examples can be found in the <code>list</code> example.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; TryFrom&lt;&amp;Token&lt;'t&gt;&gt; for Number {
