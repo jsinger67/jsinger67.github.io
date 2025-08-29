@@ -405,6 +405,23 @@ With this you have to handle newline tokens on your own in your grammar.</p>
 <p>The scanner also per default skips whitespace automatically. To suppress this use the <code>%auto_ws_off</code>
 directive.
 With this you have to handle whitespace tokens on your own in your grammar.</p>
+<h3 id="open-scanner-states"><a class="header" href="#open-scanner-states">Open scanner states</a></h3>
+<p>Scanner modes can also be configured to tolerate unmatched tokens by specifying <code>%allow_unmatched</code>
+in the scanner section of the grammar. This allows unmatched input to be ignored instead of
+triggering an error, which can be useful in certain scenarios.</p>
+<p><strong>Usage example:</strong></p>
+<pre><code class="language-parol">// For scanner state INITIAL
+%allow_unmatched
+
+// For any scanner state defined
+%scanner MyScanner {
+    ...
+    %allow_unmatched
+}
+</code></pre>
+<p>This feature is opt-in and fully backward compatible; existing grammars are unaffected unless
+<code>%allow_unmatched</code> is explicitly used.</p>
+<p>See also the new example <code>allow_unmatched</code>.</p>
 <h3 id="terminal-name-generation"><a class="header" href="#terminal-name-generation">Terminal name generation</a></h3>
 <p>The names of the terminals are deduced from the content of the terminal itself. For instance, for a
 terminal ":=" it creates the terminal name "ColonEqu", see generated parser for Oberon-0. If you
@@ -471,9 +488,11 @@ Ident: /[a-zA-Z_][a-zA-Z0-9_]*/
     ;
 </code></pre>
 <p>Defining <em>If</em> before <em>Ident</em> ensures the correct priority.</p>
+<h4 id="even-more-control-with-the-help-of-scanner-states"><a class="header" href="#even-more-control-with-the-help-of-scanner-states">Even more control with the help of scanner states</a></h4>
+<p>You can define different scanner states and assign only the terminals you want to match in each mode.</p>
 <h4 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h4>
-<p>❗ These two mechanisms, <strong>longest match rule</strong> and <strong>priority by order</strong>, gives you control over
-terminal conflicts.</p>
+<p>❗ These three mechanisms, <strong>longest match rule</strong>, <strong>priority by order</strong> and
+<strong>using multiple scanner states</strong>, gives you control over terminal conflicts.</p>
 <h3 id="terminals-that-matches-an-empty-string"><a class="header" href="#terminals-that-matches-an-empty-string">Terminals that matches an empty string</a></h3>
 <p>Please note that terminals should always match non-empty text portions. This means that you have to
 avoid terminals like this:</p>
@@ -499,7 +518,10 @@ WhiteSpaces: /[ \t]+/;
 <p><code>Parol</code> supports <strong>multiple scanner states</strong>. This feature is known from Flex as
 <a href="https://www.cs.princeton.edu/~appel/modern/c/software/flex/flex_toc.html#TOC11">Start conditions</a>
 and provides more flexibility in defining several scanners for several parts of your grammar.</p>
-<p><code>Parol</code> provides two different ways to control scanner states directly within your grammar
+<blockquote>
+<p>I use occasionally the term <strong>scanner mode</strong> which is synonymous to <strong>scanner state</strong>.</p>
+</blockquote>
+<p><code>Parol</code> provides comprehensive ways to control scanner states directly within your grammar
 description thereby holding the principle of strict separation of grammar description and grammar
 processing in semantic actions. This means no scanner switching in your code, but in the grammar
 description. Only because of this rapid prototyping is possible.</p>
@@ -509,7 +531,7 @@ in the global <code>Declaration</code> section, such as:</p>
 <pre><code class="language-parol">%line_comment "//"
 %block_comment "/\*" "\*/"
 </code></pre>
-<h3 id="introduce-new-scanner-states-with-the-scanner-directive"><a class="header" href="#introduce-new-scanner-states-with-the-scanner-directive">Introduce new scanner states with the %scanner directive</a></h3>
+<h3 id="introduce-new-scanner-states-with-the-scanner-directive"><a class="header" href="#introduce-new-scanner-states-with-the-scanner-directive">Introduce new scanner states with the <code>%scanner</code> directive</a></h3>
 <p>Use the <code>%scanner Name {...}</code> construct after the global <code>Declaration</code> section and before the <code>%%</code>
 sign to introduce arbitrary scanner states. The identifier following the %scanner token defines the
 name of the state which is used to refer to it from scanner state lists at terminals.</p>
@@ -542,14 +564,14 @@ in angle brackets. Like this:</p>
 <p>Terminals without explicitly associated scanner state are implicitly associated with scanner state
 INITIAL.</p>
 <h3 id="scanner-switching"><a class="header" href="#scanner-switching">Scanner switching</a></h3>
-<p>Scanner-based scanner switching in Parol is managed by the scanner using the <code>%enter</code>, <code>%push</code>, and
-<code>%pop</code> directives within the scanner specification:</p>
+<p>Scanner switching in Parol is managed by the scanner using the <code>%enter</code>, <code>%push</code>, and <code>%pop</code>
+directives within the scanner specification:</p>
 <ul>
 <li><code>%enter</code>: Switches the scanner to a specific mode, replacing the current mode.</li>
 <li><code>%push</code>: Pushes the current mode onto a stack and enters a new mode.</li>
 <li><code>%pop</code>: Returns to the previous mode by popping the mode stack.</li>
 </ul>
-<p>These directives ensure that scanner mode switching is handled consistently and reliably, preventing
+<p>These directives ensure that scanner state switching is handled consistently and reliably, preventing
 token buffer desynchronization in LL(k) grammars with k &gt; 1. All scanner-related features are based
 on the <a href="https://crates.io/crates/scnr2"><code>scnr2</code></a> crate.</p>
 <p>Example usage:</p>
@@ -567,8 +589,6 @@ on the <a href="https://crates.io/crates/scnr2"><code>scnr2</code></a> crate.</p
 </code></pre>
 <p>After the <code>%on</code> directive, specify a list of primary non-terminals. After the <code>%enter</code> directive,
 specify the target scanner state. <code>%push</code> and <code>%pop</code> provide stack-based mode management.</p>
-<p>Mixing parser-based and scanner-based switching in one grammar file is not allowed and will result
-in errors.</p>
 <p>Parol generates all data required by <code>scnr2</code> to construct valid and efficient scanners. Users do not
 need to understand the internal configuration of <code>scnr2</code>.</p>
 <h2 id="controlling-the-ast-generation"><a class="header" href="#controlling-the-ast-generation">Controlling the AST generation</a></h2>
