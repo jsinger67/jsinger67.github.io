@@ -321,11 +321,28 @@ Ident: /[a-zA-Z_][a-zA-Z0-9_]*/
     ;
 </code></pre>
 <p>Defining <em>If</em> before <em>Ident</em> ensures the correct priority.</p>
+<h4 id="context-aware-terminals"><a class="header" href="#context-aware-terminals">Context aware terminals</a></h4>
+<p>You can also specify whether or whether not a certain token should follow your terminal.
+To achieve this you can use the two lookahead operators <code>?=</code> and <code>?!</code>. They in principle work like
+similar operators provided by some regex engines. The scanner only tests for the existence or
+absence of the specified regular expression on the right-hand side of these operators and if the
+constraint holds it only matches the left-hand side. The right-hand side is not consumed.</p>
+<pre><code class="language-parol">// Terminal for a function name using positive lookahead expression
+// Matches the identifier part only if it is followed by an opening parenthesis
+FunctionName: /[a-zA-Z_][a-zA-Z0-9_]*/ ?= '('
+    ;
+
+// Terminal for an identifier using negative lookahead expression
+// Matches the identifier part only if it is not followed by an opening parenthesis
+Identifier: /[a-zA-Z_][a-zA-Z0-9_]*/ ?! '('
+    ;
+</code></pre>
 <h4 id="even-more-control-with-the-help-of-scanner-states"><a class="header" href="#even-more-control-with-the-help-of-scanner-states">Even more control with the help of scanner states</a></h4>
-<p>You can define different scanner states and assign only the terminals you want to match in each mode.</p>
+<p>You can define different scanner states and assign only the terminals you want to match in each mode.
+For details, please see <a href="#scanner-states">Scanner states</a> below.</p>
 <h4 id="conclusion"><a class="header" href="#conclusion">Conclusion</a></h4>
-<p>❗ These three mechanisms, <strong>longest match rule</strong>, <strong>priority by order</strong> and
-<strong>using multiple scanner states</strong>, gives you control over terminal conflicts.</p>
+<p>❗ These four mechanisms, <strong>longest match rule</strong>, <strong>priority by order</strong>, <strong>lookahead expressions</strong>
+and <strong>using multiple scanner states</strong> gives you control over terminal conflicts.</p>
 <h3 id="terminals-that-matches-an-empty-string"><a class="header" href="#terminals-that-matches-an-empty-string">Terminals that matches an empty string</a></h3>
 <p>Please note that terminals should always match non-empty text portions. This means that you have to
 avoid terminals like this:</p>
