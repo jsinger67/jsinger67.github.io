@@ -194,14 +194,26 @@ parol 4.0.1
 include <code>~/.cargo/bin</code>.</p>
 <h3 id="video-introduction"><a class="header" href="#video-introduction">Video Introduction</a></h3>
 <p>For a visual introduction, watch the <a href="https://youtu.be/TJMwMqD4XSo">introductory video</a> on YouTube.</p>
-<h2 id="generate-a-crate-with-parol"><a class="header" href="#generate-a-crate-with-parol">Generate a Crate with <code>parol</code></a></h2>
+<h2 id="generate-a-project-with-parol"><a class="header" href="#generate-a-project-with-parol">Generate a Project with <code>parol</code></a></h2>
 <p>Use the <code>parol new</code> subcommand to create a new project:</p>
 <pre><code class="language-shell">parol new --bin --path ./my_grammar
 </code></pre>
+<p>For C#, use:</p>
+<pre><code class="language-shell">parol new --bin -L c-sharp --path ./my_grammar_cs
+</code></pre>
+<p>The generated C# project references <code>Parol.Runtime</code> from NuGet by default.
+Practical C# examples are available in
+<a href="https://github.com/jsinger67/parol/tree/main/examples/calc_csharp">calc_csharp</a>
+and
+<a href="https://github.com/jsinger67/parol/tree/main/examples/json_parser_csharp">json_parser_csharp</a>.</p>
 <p>Change into the new project folder and start the initial build. <code>parol</code> will generate two files from
 the initial grammar definition.</p>
 <pre><code class="language-shell">cd ./my_grammar
 cargo build
+</code></pre>
+<p>For C#, use the C# project folder and build with:</p>
+<pre><code class="language-shell">cd ./my_grammar_cs
+dotnet build
 </code></pre>
 <blockquote>
 <p>You can safely ignore the <code>#[warn(unused_imports)]</code> warning for now. It will disappear as the
@@ -225,6 +237,8 @@ start_line: 4, start_column: 5, end_line: 4, end_column: 17, start: 62, end: 74,
 of <code>cargo build</code> will trigger <code>parol</code> to regenerate the derived sources automatically if
 <code>my_grammar.par</code> has changed.</p>
 <p><strong>This is all you need to set up a working development environment.</strong></p>
+<p>For documentation editing conventions, see the
+<a href="./UsefulTips.html#writing-style-guide">Writing Style Guide</a>.</p>
 <blockquote>
 <h2 id="vs-code-extension-and-language-server"><a class="header" href="#vs-code-extension-and-language-server">VS Code Extension and Language Server</a></h2>
 <p>A VS Code extension, <a href="https://github.com/jsinger67/parol/tree/main/tools/parol-vscode">parol-vscode</a>,

@@ -237,8 +237,8 @@ deploying your parser in production.</p>
 <p><em><strong>However, the parse tree can be useful in certain scenarios. Because it's lossless, it also
 includes otherwise discarded tokens like spaces.</strong></em></p>
 <h2 id="how-do-i-implement-the-grammar-processing"><a class="header" href="#how-do-i-implement-the-grammar-processing">How do I implement the grammar processing?</a></h2>
-<p>You should have a look at the example <a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a>.</p>
-<p>Basically, the grammar processing is implemented in the <code>calc_grammar.rs</code>.</p>
+<p>You should take a look at the example <a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a>.</p>
+<p>Basically, grammar processing is implemented in <code>calc_grammar.rs</code>.</p>
 <p>The struct <code>CalcGrammar</code> contains a collection of variables and their values called <code>env</code>.
 It also contains a stack of values that holds the intermediate results during the calculation:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -250,7 +250,7 @@ pub env: BTreeMap&lt;String, DefinitionRange&gt;,
 <p>Now you can implement selected semantic actions from the <code>PrecedenceGrammarTrait</code>. Look at the
 generated <code>src\precedence_grammar_trait.rs</code>. It contains all available semantic actions which are
 bound to non-terminals.</p>
-<p>To implement for instance the <code>variable</code> action, copy the <code>fn variable...</code> block into the</p>
+<p>To implement, for instance, the <code>variable</code> action, copy the <code>fn variable...</code> block into</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>impl&lt;'t&gt; PrecedenceGrammarTrait&lt;'t&gt; for PrecedenceGrammar&lt;'t&gt; {
@@ -274,7 +274,7 @@ bound to non-terminals.</p>
 }
 <span class="boring">}</span></code></pre></pre>
 <p>Now you can handle any variable. Because our grammar has no assignment yet, the function is simple.
-It tries to retrieve the variables value from the <code>env</code>. If the variable is not found in the <code>env</code>
+It tries to retrieve the variable's value from <code>env</code>. If the variable is not found in <code>env</code>,
 it creates a new entry with default value 0. Then it pushes this value on the <code>calc_results</code> vector
 for later processing:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -295,7 +295,8 @@ for later processing:</p>
     }
 <span class="boring">}</span></code></pre></pre>
 <p>Don't forget to <code>use</code> the type <code>Variable</code> from the module <code>precedence_grammar_trait</code>.</p>
-<p>To see the results modify the Display implementation of <code>PrecedenceGrammar</code> to show the intermediate
+<p>To see the results, modify the <code>Display</code> implementation of <code>PrecedenceGrammar</code> to show the
+intermediate
 results and the environment.</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -332,8 +333,8 @@ Result stack
 Env
 x = 0
 </code></pre>
-<p>As expected the variable <code>x</code> has been inserted into the environment with default value 0.
-The Value 0 is still on the stack.</p>
+<p>As expected, the variable <code>x</code> has been inserted into the environment with default value 0.
+The value 0 is still on the stack.</p>
 <p>Now the next step could be to implement the semantic action for non-terminal <code>Literal</code>:</p>
 <pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -361,12 +362,12 @@ Result stack
 Env
 x = 0
 </code></pre>
-<p>Now I think you could continue on your own. Implement the unary and binary operations by taking one
-or two top most numbers from the calculation stack and push the result on the stack again.
-If all is implemented correctly the end result of the calculation should be laying as single value
+<p>Now you can continue on your own. Implement the unary and binary operations by taking one
+or two topmost numbers from the calculation stack and pushing the result onto the stack again.
+If everything is implemented correctly, the end result of the calculation should lie as a single value
 on top of the calculation stack.</p>
-<p><code>-1 + x * 5</code> should the result into <code>-1 + 0 * 5</code> =&gt; <code>-1</code>.</p>
-<p>Now you could add assignments to your Grammar to be able to use variables to store and access values.
+<p><code>-1 + x * 5</code> should result in <code>-1 + 0 * 5</code> =&gt; <code>-1</code>.</p>
+<p>Now you can add assignments to your grammar to store and access values in variables.
 Allow the grammar to contain multiple operations and remove assigned values from the calculation
 stack.</p>
 

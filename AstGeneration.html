@@ -371,6 +371,12 @@ pub struct Items {
 <code>parol_runtime</code>. The text is parsed into a <code>u32</code> and wrapped in a <code>Number</code> newtype.</p>
 <p>By implementing <code>TryFrom</code> traits for your user types, you can easily integrate them into the parse
 process.</p>
+<p>For C#, the concept is equivalent, but conversion is expressed with constructors. In practice, you
+provide constructors on your custom types that accept the generated source types used by the mapping
+layer (for example <code>Token</code>, or a generated non-terminal wrapper type when <code>%nt_type</code> is used).
+See <a href="https://github.com/jsinger67/parol/tree/main/examples/calc_csharp">calc_csharp</a> and
+<a href="https://github.com/jsinger67/parol/tree/main/examples/json_parser_csharp">json_parser_csharp</a> for
+complete C# examples.</p>
 <p>Several examples are available to help you become familiar with this concept. You may also review
 the <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpreter">basic interpreter example</a>.</p>
 <blockquote>

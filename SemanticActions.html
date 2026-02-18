@@ -177,7 +177,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic actions</a></h1>
+                        <h1 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic Actions</a></h1>
 <p>The <code>parol</code> parser generator creates traits with functions that represent semantic actions.
 The generated parser then calls these functions at parse time at the appropriate points with correct
 arguments.</p>
@@ -189,22 +189,22 @@ scheme:</p>
     // ...
 }
 <span class="boring">}</span></code></pre></pre>
+<p>For C#, the same concept is generated as an interface and a base class. The interface is named
+<code>I&lt;NameOfYourGrammar&gt;Actions</code>, and the base class is named <code>&lt;NameOfYourGrammar&gt;Actions</code> with
+overridable methods for each non-terminal.</p>
 <p>The lifetime parameter <code>&lt;'t&gt;</code> can be left out if the types used don't hold references to the scanned
 text. This is automatically deduced.</p>
-<p>Eventually your grammar processing item implements this trait and can overwrite those functions of
-the trait in which it is interested in.</p>
-<p>It doesn't need to implement all trait functions because the trait is created in a way where all of
-its functions have default implementations.</p>
+<p>Your grammar processing item implements this trait and can override the functions it needs.</p>
+<p>It does not need to implement all trait functions, because all of them have default implementations.</p>
 <p>All semantic actions are generated for non-terminals of your input grammar, and are typed accordingly.</p>
 <p>The <code>parol</code> parser generator creates a trait with functions that represent semantic actions. Here,
 the semantic actions are typed and they are generated for the <em>non-terminals of your input grammar</em>
 instead of for <em>productions of the <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a></em>.</p>
-<p>You therefore don't have to mess around with <code>ParseTreeType</code> although you still encounter items of
-type <code>Token</code>. Also the expanded version of your grammar is much less of interest for you.</p>
-<p><code>parol</code>'s great merit is that it can generate an adapter layer automatically that provides the
-conversion to typed grammar items. Indeed I carved out some simple rules that can be applied
-universally to provide this layer of abstraction by generating the production bound semantic
-actions accordingly.</p>
+<p>You therefore do not have to work directly with <code>ParseTreeType</code>, although you still encounter items
+of type <code>Token</code>. Also, the expanded version of your grammar is much less relevant in day-to-day use.</p>
+<p><code>parol</code>'s great merit is that it can automatically generate an adapter layer that provides
+conversion to typed grammar items. This layer follows simple, universal rules by generating the
+production-bound semantic actions accordingly.</p>
 <p>This and the automatic AST type inference are the most outstanding properties of <code>parol</code>.</p>
 <p>We will use the example
 <a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a> for detailed explanations.</p>
@@ -243,7 +243,7 @@ the functionality of a calculator language.</p>
     }
 }
 <span class="boring">}</span></code></pre></pre>
-<p>But what is the advantage of implementing only the start symbols's semantic action? Well, since the
+<p>But what is the advantage of implementing only the start symbol's semantic action? Since the
 start symbol is the root node of each and every concrete parse tree, we know that the generated type
 for it should comprise the complete input as the result of the parsing.</p>
 <p>The key to this is the structure of the generated type <code>Calc</code>. It resembles the structure of all
@@ -295,7 +295,7 @@ Instruction: LogicalOr;
 that belongs to the grammar defined by
 <a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc.par">calc.par</a>.</p>
 <p>You then only have to evaluate the content of this value as done in this calculator example.
-I recommend to study this example more deeply and the approach will become obvious to you.</p>
+I recommend studying this example more deeply; the approach will then become obvious.</p>
 <p>As mentioned earlier the implementation can be found here:
 <a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc_grammar.rs</a>.</p>
 

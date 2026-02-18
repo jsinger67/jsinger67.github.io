@@ -177,10 +177,14 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="questions-and-answers"><a class="header" href="#questions-and-answers">Questions and answers</a></h1>
-<h2 id="q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug"><a class="header" href="#q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug">Q: I get stack overflow in compiler generated trait's like <code>Drop</code>, <code>Clone</code> and <code>Debug</code></a></h2>
+                        <h1 id="questions-and-answers"><a class="header" href="#questions-and-answers">Questions and Answers</a></h1>
+<h2 id="q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug"><a class="header" href="#q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug">Q: I get stack overflow in compiler-generated traits like <code>Drop</code>, <code>Clone</code>, and <code>Debug</code></a></h2>
 <p>A: The reason is most likely a deeply nested structure generated during parsing. There are two
-advices which could lead to working solution:</p>
+recommendations that can lead to a working solution:</p>
+<blockquote>
+<p>The <code>Drop</code>/<code>Clone</code>/<code>Debug</code> naming is Rust-specific, but the grammar advice below also helps in C#
+if deeply recursive grammar shapes cause stack overflows at runtime.</p>
+</blockquote>
 <ol>
 <li>Avoid 'plain' recursions in your grammar like this (for LL(k) grammars):</li>
 </ol>
@@ -225,24 +229,28 @@ pub struct ListItem&lt;'t&gt; {
 }
 <span class="boring">}</span></code></pre></pre>
 <ol start="2">
-<li>Implement the problematic traits by yourself and avoid the recursion by using a loop instead.
-I can't give a general advice here, but there are plenty examples out there that cover this topic
+<li>Implement the problematic traits yourself and avoid recursion by using a loop instead.
+I cannot give general advice here, but there are plenty of examples that cover this topic
 thoroughly.</li>
 </ol>
-<h2 id="q-i-get-strange-errors-while-commissioning-my-new-grammar-and-cant-figure-out-what-the-problem-is"><a class="header" href="#q-i-get-strange-errors-while-commissioning-my-new-grammar-and-cant-figure-out-what-the-problem-is">Q: I get strange errors while commissioning my new grammar and can't figure out what the problem is</a></h2>
-<p>A: Consider the following advices</p>
-<h3 id="break-down-the-problem-with-a-least-input-as-possible"><a class="header" href="#break-down-the-problem-with-a-least-input-as-possible">Break down the problem with a least input as possible</a></h3>
+<h2 id="q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem"><a class="header" href="#q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem">Q: I get strange errors while developing my new grammar and cannot figure out the problem</a></h2>
+<p>A: Consider the following recommendations:</p>
+<h3 id="break-down-the-problem-with-as-little-input-as-possible"><a class="header" href="#break-down-the-problem-with-as-little-input-as-possible">Break down the problem with as little input as possible</a></h3>
 <p>This will limit the possible error location and also minimize the amount of traces to scrutinize.</p>
 <h3 id="disable-error-recovery-for-llk-parsers"><a class="header" href="#disable-error-recovery-for-llk-parsers">Disable error recovery for LL(k) parsers</a></h3>
 <p>The process of error recovery will surely shroud the original error location.
 Therefore it is advisable to temporarily disable it.</p>
-<p>Use Builder API (<code>disable_recovery()</code>) or command line argument (<code>--disable-recovery</code>).</p>
+<p>Use the Builder API (<code>disable_recovery()</code>) or the command-line argument (<code>--disable-recovery</code>).</p>
 <h3 id="enable-traces"><a class="header" href="#enable-traces">Enable traces</a></h3>
-<p>In all projects that were generated with <code>parol new</code> the env_logger is built in. First activate all
-traces. I'll show the principle in powershell because this will work on Windows as well as on Linux</p>
+<p>In all projects generated with <code>parol new</code>, <code>env_logger</code> is built in. First activate all traces.
+I will show the principle in PowerShell because this works on Windows as well as on Linux.</p>
+<blockquote>
+<p>The <code>RUST_LOG</code> examples below are for Rust projects. In C#, use your application's logging setup
+and inspect generated parser/action code similarly when tracing parse behavior.</p>
+</blockquote>
 <pre><code class="language-powershell">$env:RUST_LOG="trace"
 </code></pre>
-<p>Then run your scenario and examine the output. If necessary restrict the traces further by tweaking
+<p>Then run your scenario and examine the output. If necessary, restrict the traces further by tweaking
 the RUST_LOG variable, e.g. for parser and scanner internals use this:</p>
 <pre><code class="language-powershell">$env:RUST_LOG="parol_runtime=trace"
 # or
@@ -254,8 +262,8 @@ $env:RUST_LOG="parol_runtime::lr_parser=trace"
 </code></pre>
 <ul>
 <li>Examine the traces from the beginning to pin down the first occurrence of the problem</li>
-<li>Often the problems are related to wrong terminal definitions or terminal conflicts or evens
-scanner state related problems, therefore
+<li>Often problems are related to incorrect terminal definitions, terminal conflicts, or even
+scanner-state-related issues. Therefore:
 <ul>
 <li>Check for token types attached to the tokens provided during parse, the numbers can be found
 in the generated parser</li>
@@ -280,7 +288,11 @@ in the generated parser</li>
 </span><span class="boring">fn main() {
 </span>use parol::{build::Builder, InnerAttributes, ParolErrorReporter};
 <span class="boring">}</span></code></pre></pre>
-<p>Another way to avoid this waring is to modify your grammar such that the lengths of the right-hand
+<blockquote>
+<p>This warning and the <code>clippy</code> suppression are Rust-specific. For C#, prefer reducing very long
+RHS productions by factoring grammar rules, as described below.</p>
+</blockquote>
+<p>Another way to avoid this warning is to modify your grammar such that the lengths of the right-hand
 sides of your productions are decreased. Therefore examine the productions that correlate to the
 functions where the warnings occur. Then consider to factor out parts of the RHS into separate
 productions.</p>
