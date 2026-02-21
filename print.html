@@ -312,6 +312,8 @@ Practical C# examples are available in
 <a href="https://github.com/jsinger67/parol/tree/main/examples/calc_csharp">calc_csharp</a>
 and
 <a href="https://github.com/jsinger67/parol/tree/main/examples/json_parser_csharp">json_parser_csharp</a>.</p>
+<p>Currently, C# code generation supports only LL(k) grammars.
+<code>%grammar_type 'LALR(1)'</code> is rejected until C# LALR(1) parser generation is implemented.</p>
 <p>Change into the new project folder and start the initial build. <code>parol</code> will generate two files from
 the initial grammar definition.</p>
 <pre><code class="language-shell">cd ./my_grammar
@@ -390,6 +392,10 @@ description.</p>
 <p>You can define the grammar type as LALR(1) this way:</p>
 <pre><code class="language-parol">%grammar_type 'LALR(1)'
 </code></pre>
+<blockquote>
+<p>Note for C#: C# code generation currently supports only LL(k) grammars.
+<code>%grammar_type 'LALR(1)'</code> is rejected until C# LALR(1) parser generation is implemented.</p>
+</blockquote>
 <h2 id="case-sensitivity"><a class="header" href="#case-sensitivity">Case Sensitivity</a></h2>
 <p>Non-terminals are treated as case-sensitive, i.e., "list" and "List" are different symbols. However,
 it is not recommended to rely on this in your grammar definition. It is much better to keep
@@ -1509,7 +1515,9 @@ B: X Y Z;
 Determine why you need productions with identical right-hand sides. If they are actually the same, consider unifying them.</li>
 </ul>
 <p>If you have a historical grammar definition that is left-recursive (common in Yacc/Bison grammar descriptions), allow extra time and effort to convert it to a right-recursive form.</p>
-<p>Alternatively, you can use LALR(1) grammars without sacrificing the convenience of <code>parol</code>. See the <a href="https://jsinger67.github.io/ParGrammar.html#defining-the-grammar-type">grammar type specification</a>.</p>
+<p>Alternatively, in Rust projects you can use LALR(1) grammars without sacrificing the convenience of
+<code>parol</code>. See the <a href="https://jsinger67.github.io/ParGrammar.html#defining-the-grammar-type">grammar type specification</a>.
+For C#, parser generation currently supports only LL(k) grammars.</p>
 <p><code>parol</code> currently does not provide special support for this phase, except for detecting left recursions in your grammar.</p>
 <p>Support for removing direct left recursions may be provided in the future.</p>
 <h2 id="writing-style-guide"><a class="header" href="#writing-style-guide">Writing Style Guide</a></h2>

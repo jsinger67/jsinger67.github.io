@@ -206,6 +206,8 @@ Practical C# examples are available in
 <a href="https://github.com/jsinger67/parol/tree/main/examples/calc_csharp">calc_csharp</a>
 and
 <a href="https://github.com/jsinger67/parol/tree/main/examples/json_parser_csharp">json_parser_csharp</a>.</p>
+<p>Currently, C# code generation supports only LL(k) grammars.
+<code>%grammar_type 'LALR(1)'</code> is rejected until C# LALR(1) parser generation is implemented.</p>
 <p>Change into the new project folder and start the initial build. <code>parol</code> will generate two files from
 the initial grammar definition.</p>
 <pre><code class="language-shell">cd ./my_grammar
