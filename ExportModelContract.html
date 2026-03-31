@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Semantic Actions - The Parol Parser Generator</title>
+        <title>Export Model Contract - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,137 +177,238 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="semantic-actions"><a class="header" href="#semantic-actions">Semantic Actions</a></h1>
-<p>The <code>parol</code> parser generator creates traits with functions that represent semantic actions.
-The generated parser then calls these functions at parse time at the appropriate points with correct
-arguments.</p>
-<p>The generated trait for user actions (i.e. semantic actions) will be named after the following
-scheme:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub trait &lt;NameOfYourGrammar&gt;GrammarTrait&lt;'t&gt; {
-    // ...
-}
-<span class="boring">}</span></code></pre></pre>
-<p>For C#, the same concept is generated as an interface and a base class. The interface is named
-<code>I&lt;NameOfYourGrammar&gt;Actions</code>, and the base class is named <code>&lt;NameOfYourGrammar&gt;Actions</code> with
-overridable methods for each non-terminal.</p>
-<p>The lifetime parameter <code>&lt;'t&gt;</code> can be left out if the types used don't hold references to the scanned
-text. This is automatically deduced.</p>
-<p>Your grammar processing item implements this trait and can override the functions it needs.</p>
-<p>It does not need to implement all trait functions, because all of them have default implementations.</p>
-<p>All semantic actions are generated for non-terminals of your input grammar, and are typed accordingly.</p>
-<p>The <code>parol</code> parser generator creates a trait with functions that represent semantic actions. Here,
-the semantic actions are typed and they are generated for the <em>non-terminals of your input grammar</em>
-instead of for <em>productions of the <a href="AstGeneration.html#the-expanded-grammar">expanded grammar</a></em>.</p>
-<p>You therefore do not have to work directly with <code>ParseTreeType</code>, although you still encounter items
-of type <code>Token</code>. Also, the expanded version of your grammar is much less relevant in day-to-day use.</p>
-<p><code>parol</code>'s great merit is that it can automatically generate an adapter layer that provides
-conversion to typed grammar items. This layer follows simple, universal rules by generating the
-production-bound semantic actions accordingly.</p>
-<p>This and the automatic AST type inference are the most outstanding properties of <code>parol</code>.</p>
-<p>We will use the example
-<a href="https://github.com/jsinger67/parol/tree/main/examples/calc">calc</a> for detailed explanations.</p>
-<p>The file
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar_trait.rs">calc_grammar_trait.rs</a>
-contains the generated traits and types we are interested in.</p>
-<p>First we will have a look at the <code>CalcGrammarTrait</code> at the top of this file. For each non-terminal
-of the input grammar
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc.par">calc.par</a> it contains exactly
-one semantic action.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>/// Semantic actions trait generated for the user grammar
-/// All functions have default implementations.
-pub trait CalcGrammarTrait&lt;'t&gt; {
-    /// Semantic action for non-terminal 'Calc'
-    fn calc(&amp;mut self, _arg: &amp;Calc&lt;'t&gt;) -&gt; Result&lt;()&gt; {
-        Ok(())
-    }
-    // ...
-}
-<span class="boring">}</span></code></pre></pre>
-<p>The approach taken in this example is quite interesting. We only implement the semantic action for
-the start symbol of our grammar: <em>Calc</em>.</p>
-<p>The implementation can be found in
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc_grammar.rs</a>.</p>
-<p>Near the end you can find the one and only semantic action we implement here and thereby creating
-the functionality of a calculator language.</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>impl&lt;'t&gt; CalcGrammarTrait&lt;'t&gt; for CalcGrammar&lt;'t&gt; {
-    /// Semantic action for non-terminal 'Calc'
-    fn calc(&amp;mut self, arg: &amp;Calc&lt;'t&gt;) -&gt; Result&lt;()&gt; {
-        self.process_calc(arg)?;
-        Ok(())
-    }
-}
-<span class="boring">}</span></code></pre></pre>
-<p>But what is the advantage of implementing only the start symbol's semantic action? Since the
-start symbol is the root node of each and every concrete parse tree, we know that the generated type
-for it should comprise the complete input as the result of the parsing.</p>
-<p>The key to this is the structure of the generated type <code>Calc</code>. It resembles the structure of all
-productions belonging to the non-terminal <code>Calc</code>. There is actually only one production for <code>Calc</code>:</p>
-<pre><code class="language-parol">Calc: { Instruction ";"^ };
+                        <h1 id="export-model-contract"><a class="header" href="#export-model-contract">Export Model Contract</a></h1>
+<p>This chapter defines the contract for external tools that consume <code>parol export</code> output.</p>
+<h2 id="goal"><a class="header" href="#goal">Goal</a></h2>
+<p>The export model is meant to provide language-agnostic grammar facts that are sufficient to build
+parser/scanner generators in other ecosystems.</p>
+<p>The contract intentionally separates two concerns:</p>
+<ul>
+<li>Export model: grammar-derived, algorithm-specific facts</li>
+<li>External consumer config: generation policy and runtime behavior choices</li>
+</ul>
+<h2 id="boundary-what-belongs-in-export"><a class="header" href="#boundary-what-belongs-in-export">Boundary: What belongs in export</a></h2>
+<p>The export payload contains data that is intrinsic to the grammar and parser construction:</p>
+<ul>
+<li>parser algorithm kind (<code>Llk</code> or <code>Lalr1</code>)</li>
+<li>ordered non-terminals and start symbol index</li>
+<li>production list and RHS symbol structure</li>
+<li>LL(k) lookahead automata or LALR(1) parse table</li>
+<li>scanner terminals, states, comments, transitions, and lookahead expressions</li>
+<li>production datatype metadata derived from grammar type analysis</li>
+</ul>
+<p>This data is considered portable across target languages.</p>
+<h2 id="boundary-what-does-not-belong-in-export"><a class="header" href="#boundary-what-does-not-belong-in-export">Boundary: What does not belong in export</a></h2>
+<p>Configuration that is policy-driven or target-runtime specific should be provided by the external
+tool, not embedded as language-independent export metadata.</p>
+<p>Typical examples:</p>
+<ul>
+<li>enabling/disabling recovery in generated runtime wiring</li>
+<li>parse tree omission or parse tree construction strategy</li>
+<li>naming/style conventions in generated target-language code</li>
+<li>file/project layout and scaffolding preferences</li>
+<li>target-specific runtime integration flags</li>
+</ul>
+<p>Keeping these settings outside the core export keeps the schema stable and avoids coupling to one
+runtime style.</p>
+<h2 id="versioning-and-compatibility"><a class="header" href="#versioning-and-compatibility">Versioning and compatibility</a></h2>
+<p>The export schema version is carried in <code>ParserExportModel.version</code>.</p>
+<p>Machine-readable JSON Schema for <code>version = 1</code>:</p>
+<ul>
+<li><code>crates/parol/schemas/parser-export-model.v1.schema.json</code></li>
+</ul>
+<h3 id="quick-validation-example"><a class="header" href="#quick-validation-example">Quick validation example</a></h3>
+<p>Using <code>ajv-cli</code> (Node.js), you can validate an exported JSON file against the schema:</p>
+<pre><code class="language-bash">npx ajv-cli validate \
+	-s crates/parol/schemas/parser-export-model.v1.schema.json \
+	-d crates/parol/tests/data/arg_tests/export_llk.expected.json
 </code></pre>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>///
-/// Type derived for non-terminal Calc
-///
-pub struct Calc&lt;'t&gt; {
-    pub calc_list: Vec&lt;CalcList&lt;'t&gt;&gt;,
+<p>To validate a LALR export, replace the <code>-d</code> path with your <code>export_lalr1</code> JSON (or any JSON
+generated by <code>parol export</code>).</p>
+<p>Compatibility expectations for consumers:</p>
+<ul>
+<li>reject unsupported future versions explicitly</li>
+<li>accept known versions exactly</li>
+<li>treat unknown top-level fields as non-breaking when possible</li>
+<li>treat missing required fields for a known version as an error</li>
+</ul>
+<p>Recommended consumer strategy:</p>
+<ol>
+<li>Read <code>version</code> first.</li>
+<li>Dispatch to a version-specific decoder.</li>
+<li>Validate required sections for the selected algorithm.</li>
+<li>Apply external consumer config after model decoding.</li>
+</ol>
+<h2 id="minimum-required-sections-per-algorithm"><a class="header" href="#minimum-required-sections-per-algorithm">Minimum required sections per algorithm</a></h2>
+<p>Required for all versions currently supported by <code>parol</code> export:</p>
+<ul>
+<li><code>version</code></li>
+<li><code>algorithm</code></li>
+<li><code>non_terminal_names</code></li>
+<li><code>start_symbol_index</code></li>
+<li><code>productions</code></li>
+<li><code>scanner</code></li>
+<li><code>production_datatypes</code></li>
+</ul>
+<p>Additional required section by algorithm:</p>
+<ul>
+<li><code>Llk</code>: <code>lookahead_automata</code> required, <code>lalr_parse_table</code> must be <code>null</code></li>
+<li><code>Lalr1</code>: <code>lalr_parse_table</code> required, <code>lookahead_automata</code> should be empty</li>
+</ul>
+<h2 id="minimal-json-examples"><a class="header" href="#minimal-json-examples">Minimal JSON examples</a></h2>
+<p>The following examples are intentionally reduced to illustrate the contract shape, not full
+real-world content.</p>
+<h3 id="llk-export-example"><a class="header" href="#llk-export-example">LL(k) export example</a></h3>
+<pre><code class="language-json">{
+	"version": 1,
+	"algorithm": "Llk",
+	"non_terminal_names": ["Start"],
+	"start_symbol_index": 0,
+	"productions": [
+		{
+			"production_index": 0,
+			"lhs_index": 0,
+			"rhs": [],
+			"text": "Start: ;"
+		}
+	],
+	"lookahead_automata": [
+		{
+			"non_terminal_index": 0,
+			"non_terminal_name": "Start",
+			"prod0": 0,
+			"k": 0,
+			"transitions": []
+		}
+	],
+	"lalr_parse_table": null,
+	"scanner": {
+		"terminals": [],
+		"scanner_states": [
+			{
+				"scanner_state": 0,
+				"scanner_name": "INITIAL",
+				"line_comments": [],
+				"block_comments": [],
+				"auto_newline": true,
+				"auto_ws": true,
+				"allow_unmatched": false,
+				"transitions": []
+			}
+		]
+	},
+	"production_datatypes": [
+		{
+			"production_index": 0,
+			"non_terminal_name": "Start",
+			"production_attribute": "None",
+			"type_name": "StartEmpty",
+			"type_kind": "Struct",
+			"rust_type": "StartEmpty",
+			"members": []
+		}
+	]
 }
-<span class="boring">}</span></code></pre></pre>
-<p>The type <code>Calc</code> is basically a vector, which can be deduced from the repetition construct at the
-right-hand side of the production (<code>{ Instruction ";"^ }</code>).</p>
-<p>The elements of the vector are of type <code>CalcList</code> that is defined this way:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>///
-/// Type derived for non-terminal calcList
-///
-pub struct CalcList&lt;'t&gt; {
-    pub instruction: Instruction&lt;'t&gt;,
-}
-<span class="boring">}</span></code></pre></pre>
-<p>And in turn the type <code>Instruction</code> looks like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>///
-/// Type derived for non-terminal instruction
-///
-pub enum Instruction&lt;'t&gt; {
-    Assignment(InstructionAssignment&lt;'t&gt;),
-    LogicalOr(InstructionLogicalOr&lt;'t&gt;),
-}
-<span class="boring">}</span></code></pre></pre>
-<p>The latter one is an enum with two variants because the non-terminal <code>Instruction</code> has two
-productions:</p>
-<pre><code class="language-parol">// ---------------------------------------------------------
-// INSTRUCTION
-Instruction: Assignment;
-Instruction: LogicalOr;
 </code></pre>
-<p>This concept is applied for all non-terminals of your grammar. Actually your grammar became
-<em>typified</em>.</p>
-<p>This means eventually that any variable of type <code>Calc</code> can represent a validly parsed input sentence
-that belongs to the grammar defined by
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc.par">calc.par</a>.</p>
-<p>You then only have to evaluate the content of this value as done in this calculator example.
-I recommend studying this example more deeply; the approach will then become obvious.</p>
-<p>As mentioned earlier the implementation can be found here:
-<a href="https://github.com/jsinger67/parol/blob/main/examples/calc/calc_grammar.rs">calc_grammar.rs</a>.</p>
+<h3 id="lalr1-export-example"><a class="header" href="#lalr1-export-example">LALR(1) export example</a></h3>
+<pre><code class="language-json">{
+	"version": 1,
+	"algorithm": "Lalr1",
+	"non_terminal_names": ["Start"],
+	"start_symbol_index": 0,
+	"productions": [
+		{
+			"production_index": 0,
+			"lhs_index": 0,
+			"rhs": [],
+			"text": "Start: ;"
+		}
+	],
+	"lookahead_automata": [],
+	"lalr_parse_table": {
+		"actions": ["Accept"],
+		"states": [
+			{
+				"actions": [],
+				"gotos": []
+			}
+		]
+	},
+	"scanner": {
+		"terminals": [],
+		"scanner_states": [
+			{
+				"scanner_state": 0,
+				"scanner_name": "INITIAL",
+				"line_comments": [],
+				"block_comments": [],
+				"auto_newline": true,
+				"auto_ws": true,
+				"allow_unmatched": false,
+				"transitions": []
+			}
+		]
+	},
+	"production_datatypes": [
+		{
+			"production_index": 0,
+			"non_terminal_name": "Start",
+			"production_attribute": "None",
+			"type_name": "StartEmpty",
+			"type_kind": "Struct",
+			"rust_type": "StartEmpty",
+			"members": []
+		}
+	]
+}
+</code></pre>
+<h2 id="external-config-contract-consumer-side"><a class="header" href="#external-config-contract-consumer-side">External config contract (consumer side)</a></h2>
+<p>Consumers should define their own explicit config input (CLI flags, file, or API params) for
+policy decisions. A minimal cross-language config typically includes:</p>
+<ul>
+<li>recovery mode and limits</li>
+<li>parse tree strategy</li>
+<li>naming/casing policy</li>
+<li>output layout and file naming</li>
+<li>optional runtime integration switches</li>
+</ul>
+<p>This config is intentionally separate from parser export JSON.</p>
+<p>Example consumer config (outside export JSON):</p>
+<pre><code class="language-json">{
+	"recovery": {
+		"enabled": true,
+		"max_sync_tokens": 64
+	},
+	"parse_tree": {
+		"mode": "omit"
+	},
+	"naming": {
+		"type_case": "PascalCase",
+		"member_case": "snake_case"
+	},
+	"output": {
+		"directory": "./generated",
+		"single_file": false
+	}
+}
+</code></pre>
+<h2 id="reproducibility-note"><a class="header" href="#reproducibility-note">Reproducibility note</a></h2>
+<p>If you need exact reproducibility of generated output, persist both:</p>
+<ul>
+<li>parser export JSON</li>
+<li>consumer config used during generation</li>
+</ul>
+<p>Optionally record tool and schema provenance in your own metadata layer.</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="ExportModelContract.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="AstGeneration.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="UsefulTips.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="SemanticActions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <i class="fa fa-angle-right"></i>
                             </a>
 
@@ -317,11 +418,11 @@ I recommend studying this example more deeply; the approach will then become obv
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="ExportModelContract.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="AstGeneration.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="UsefulTips.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="SemanticActions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <i class="fa fa-angle-right"></i>
                     </a>
             </nav>
