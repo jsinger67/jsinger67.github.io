@@ -230,7 +230,7 @@ underspecified, and understanding the root cause can still be challenging in pra
 ANTLR generates top-down recursive-descent parsers (with adaptive LL(*) prediction). As with other
 recursive-descent parsers, deeply nested inputs can hit call-stack limits (depending on target
 runtime and settings). For example, an expression with thousands of nested parentheses can trigger
-such an issue.[^1]<sup class="footnote-reference" id="fr-3-1"><a href="#footnote-3">2</a></sup></p>
+such an issue.<sup class="footnote-reference" id="fr-1-1"><a href="#footnote-1">2</a></sup> <sup class="footnote-reference" id="fr-3-1"><a href="#footnote-3">3</a></sup></p>
 <p>Despite these differences, Bison generates deterministic parsers using finite automata, and ANTLR
 also uses deterministic finite automata to select the next production for a non-terminal.</p>
 <p>This raised the question: Why not combine the best of both worlds?</p>
@@ -281,6 +281,12 @@ and a <a href="https://github.com/jsinger67/parol/tree/main/crates/parol-ls">Lan
 <hr>
 <ol class="footnote-definition"><li id="footnote-2">
 <p>Bison manual: <a href="https://www.gnu.org/software/bison/manual/html_node/Shift_002fReduce.html">Shift/Reduce Conflicts</a> and <a href="https://www.gnu.org/software/bison/manual/html_node/Reduce_002fReduce.html">Reduce/Reduce Conflicts</a> <a href="#fr-2-1">↩</a></p>
+</li>
+<li id="footnote-1">
+<p>To be fair, parol is not immune to stack overflows. In deeply nested expressions, the
+resulting data structures also become deeply nested. Some compiler-generated trait implementations
+like <code>Debug</code>, <code>Clone</code>, or <code>Drop</code> can then cause stack overflows. This can be avoided by carefully
+implementing such traits yourself. <a href="#fr-1-1">↩</a></p>
 </li>
 <li id="footnote-3">
 <p>ANTLR v4 docs: <a href="https://github.com/antlr/antlr4/blob/master/doc/faq/general.md">General FAQ (adaptive LL(*))</a> and <a href="https://github.com/antlr/antlr4/blob/master/doc/left-recursion.md">Left-recursive rules</a> <a href="#fr-3-1">↩</a></p>
