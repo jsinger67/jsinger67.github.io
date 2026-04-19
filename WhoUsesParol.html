@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Q&amp;A - The Parol Parser Generator</title>
+        <title>Who uses Parol - The Parol Parser Generator</title>
 
 
         <!-- Custom HTML head -->
@@ -177,137 +177,76 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="questions-and-answers"><a class="header" href="#questions-and-answers">Questions and Answers</a></h1>
-<h2 id="q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug"><a class="header" href="#q-i-get-stack-overflow-in-compiler-generated-traits-like-drop-clone-and-debug">Q: I get stack overflow in compiler-generated traits like <code>Drop</code>, <code>Clone</code>, and <code>Debug</code></a></h2>
-<p>A: The reason is most likely a deeply nested structure generated during parsing. There are two
-recommendations that can lead to a working solution:</p>
-<blockquote>
-<p>The <code>Drop</code>/<code>Clone</code>/<code>Debug</code> naming is Rust-specific, but the grammar advice below also helps in C#
-if deeply recursive grammar shapes cause stack overflows at runtime.</p>
-</blockquote>
-<ol>
-<li>Avoid 'plain' recursions in your grammar like this (for LL(k) grammars):</li>
-</ol>
-<pre><code class="language-parol">List: ListItem List;
-List: ;
-ListItem: Number;
-Number: /0|[1-9][0-9]*/;
-</code></pre>
-<p>This will generate recursive data structures like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub enum List&lt;'t&gt; {
-    ListItemList(ListListItemList&lt;'t&gt;),
-    ListEmpty(ListListEmpty),
-}
-pub struct ListListItemList&lt;'t&gt; {
-    pub list_item: Box&lt;ListItem&lt;'t&gt;&gt;,
-    pub list: Box&lt;List&lt;'t&gt;&gt;,
-}
-pub struct Number&lt;'t&gt; {
-    pub number: Token&lt;'t&gt;, /* 0|[1-9][0-9]* */
-}
-<span class="boring">}</span></code></pre></pre>
-<p>The recursion occurs here by containing <code>List</code> in <code>ListListItemList</code>.</p>
-<p>Use instead <code>parol</code>'s own repetition construct (<code>{...}</code>), which will result in the generation of a data type
-containing a vector.</p>
-<pre><code class="language-parol">List: { ListItem };
-ListItem: Number;
-Number: /0|[1-9][0-9]*/: Number;
-</code></pre>
-<p>This will generate iterative data structures like this:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>pub struct List&lt;'t&gt; {
-    pub list_list: Vec&lt;ListList&lt;'t&gt;&gt;,
-}
-pub struct ListList {
-    pub list_item: Box&lt;ListItem&gt;,
-}
-pub struct ListItem&lt;'t&gt; {
-    pub number: Box&lt;Number&lt;'t&gt;&gt;,
-}
-<span class="boring">}</span></code></pre></pre>
-<ol start="2">
-<li>Implement the problematic traits yourself and avoid recursion by using a loop instead.
-I cannot give general advice here, but there are plenty of examples that cover this topic
-thoroughly.</li>
-</ol>
-<h2 id="q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem"><a class="header" href="#q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem">Q: I get strange errors while developing my new grammar and cannot figure out the problem</a></h2>
-<p>A: Consider the following recommendations:</p>
-<h3 id="break-down-the-problem-with-as-little-input-as-possible"><a class="header" href="#break-down-the-problem-with-as-little-input-as-possible">Break down the problem with as little input as possible</a></h3>
-<p>This will limit the possible error location and also minimize the amount of traces to scrutinize.</p>
-<h3 id="disable-error-recovery-for-llk-parsers"><a class="header" href="#disable-error-recovery-for-llk-parsers">Disable error recovery for LL(k) parsers</a></h3>
-<p>The process of error recovery will surely shroud the original error location.
-Therefore it is advisable to temporarily disable it.</p>
-<p>Use the Builder API (<code>disable_recovery()</code>) or the command-line argument (<code>--disable-recovery</code>).</p>
-<h3 id="enable-traces"><a class="header" href="#enable-traces">Enable traces</a></h3>
-<p>In all projects generated with <code>parol new</code>, <code>env_logger</code> is built in. First activate all traces.
-I will show the principle in PowerShell because this works on Windows as well as on Linux.</p>
-<blockquote>
-<p>The <code>RUST_LOG</code> examples below are for Rust projects. In C#, use your application's logging setup
-and inspect generated parser/action code similarly when tracing parse behavior.</p>
-</blockquote>
-<pre><code class="language-powershell">$env:RUST_LOG="trace"
-</code></pre>
-<p>Then run your scenario and examine the output. If necessary, restrict the traces further by tweaking
-the RUST_LOG variable, e.g. for parser and scanner internals use this:</p>
-<pre><code class="language-powershell">$env:RUST_LOG="parol_runtime=trace"
-# or
-$env:RUST_LOG="parol_runtime::lexer=trace"
-# or
-$env:RUST_LOG="parol_runtime::parser=trace"
-# or
-$env:RUST_LOG="parol_runtime::lr_parser=trace"
-</code></pre>
-<ul>
-<li>Examine the traces from the beginning to pin down the first occurrence of the problem</li>
-<li>Often problems are related to incorrect terminal definitions, terminal conflicts, or even
-scanner-state-related issues. Therefore:
-<ul>
-<li>Check for token types attached to the tokens provided during parse, the numbers can be found
-in the generated parser</li>
-<li>Check the current scanner state and if the tokens are valid there</li>
-</ul>
-</li>
-</ul>
-<h2 id="q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments"><a class="header" href="#q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments">Q: I get warnings in generated code 'This function has too many arguments'</a></h2>
-<p>A: Configure the builder in your <code>build.rs</code> to let <code>parol</code> generate a</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span>#![allow(clippy::too_many_arguments)]
-<span class="boring">fn main() {
-</span><span class="boring">}</span></code></pre></pre>
-<p>line at the beginning of your generated file.</p>
-<p>Add this line in the builder configuration somewhere before the call to <code>.generate_parser()</code>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>        .inner_attributes(vec![InnerAttributes::AllowTooManyArguments])
-<span class="boring">}</span></code></pre></pre>
-<p>Don't forget to import the <code>InnerAttributes</code> into your <code>build.rs</code>:</p>
-<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use parol::{build::Builder, InnerAttributes, ParolErrorReporter};
-<span class="boring">}</span></code></pre></pre>
-<blockquote>
-<p>This warning and the <code>clippy</code> suppression are Rust-specific. For C#, prefer reducing very long
-RHS productions by factoring grammar rules, as described below.</p>
-</blockquote>
-<p>Another way to avoid this warning is to modify your grammar such that the lengths of the right-hand
-sides of your productions are decreased. Therefore examine the productions that correlate to the
-functions where the warnings occur. Then consider to factor out parts of the RHS into separate
-productions.</p>
+                        <h1 id="who-uses-parol"><a class="header" href="#who-uses-parol">Who uses Parol</a></h1>
+<h2 id="veryl"><a class="header" href="#veryl"><a href="https://github.com/veryl-lang/veryl">Veryl</a></a></h2>
+<p><strong>Purpose:</strong> Modern Hardware Description Language (HDL) as an alternative to SystemVerilog.</p>
+<p><strong>Parol Usage:</strong> Grammar definition and parser generation for the Veryl language.</p>
+<p><strong>Parol Version:</strong> v4.x</p>
+<h2 id="sdcx"><a class="header" href="#sdcx"><a href="https://github.com/dalance/sdcx">sdcx</a></a></h2>
+<p><strong>Purpose:</strong> Toolkit and library for parsing and validating SDC (Synopsys Design Constraints).</p>
+<p><strong>Parol Usage:</strong> SDC grammar in <code>sdc.par</code>, parser is generated by Parol during the build process.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="wiki-corpus"><a class="header" href="#wiki-corpus"><a href="https://github.com/akitenkrad/wiki-corpus">wiki-corpus</a></a></h2>
+<p><strong>Purpose:</strong> Extraction of text from Wikipedia dumps in JsonLines format.</p>
+<p><strong>Parol Usage:</strong> Custom grammar in <code>wiki-corpus-grammar</code> / <code>wiki-corpus-parser</code>, parser generation with Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="libyang"><a class="header" href="#libyang"><a href="https://github.com/zebra-rs/libyang">libyang</a></a></h2>
+<p><strong>Purpose:</strong> Rust implementation/library for YANG schemas.</p>
+<p><strong>Parol Usage:</strong> YANG grammar in <code>yang.par</code>, parser generation with Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="eure"><a class="header" href="#eure"><a href="https://github.com/Hihaheho/eure">eure</a></a></h2>
+<p><strong>Purpose:</strong> Minimalist, schema-friendly data/document format with its own DSL.</p>
+<p><strong>Parol Usage:</strong> Mentioned in TODO list as "swon-parol"; credits acknowledge Parol as parser generator.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="desk"><a class="header" href="#desk"><a href="https://github.com/Hihaheho/Desk">Desk</a></a></h2>
+<p><strong>Purpose:</strong> "Application platform for your cyberpunk desk" with its own language Desk-lang.</p>
+<p><strong>Parol Usage:</strong> Formal language definition and parser generation (among others, in the context of the formal definition of Desk-lang).</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="glp_parser"><a class="header" href="#glp_parser"><a href="https://github.com/lum1narie/glp_parser">glp_parser</a></a></h2>
+<p><strong>Purpose:</strong> Parser for GLP files from the ICCAD 2013 Contest.</p>
+<p><strong>Parol Usage:</strong> GLP grammar in <code>glp_parser.par</code>, parser generation via <code>build.rs</code> with Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="parse-rosetta-rs"><a class="header" href="#parse-rosetta-rs"><a href="https://github.com/rosetta-rs/parse-rosetta-rs">parse-rosetta-rs</a></a></h2>
+<p><strong>Purpose:</strong> Benchmark and comparison project for various parser APIs in Rust.</p>
+<p><strong>Parol Usage:</strong> Parol as one of the tested parser implementations (LL(k)/LALR(1)), integration via build script.</p>
+<p><strong>Parol Version:</strong> v4.3.5</p>
+<h2 id="rocsho"><a class="header" href="#rocsho"><a href="https://github.com/AumyF/rocsho">rocsho</a></a></h2>
+<p><strong>Purpose:</strong> Experimental programming language "RocSho".</p>
+<p><strong>Parol Usage:</strong> Language grammar in <code>rocsho.par</code>, parser generation in the build process.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="raa_tt"><a class="header" href="#raa_tt"><a href="https://github.com/jsinger67/raa_tt">raa_tt</a></a></h2>
+<p><strong>Purpose:</strong> Propositional Logic Prover with CLI and library.</p>
+<p><strong>Parol Usage:</strong> Grammar in <code>raa_tt.par</code> / <code>raa_tt-exp.par</code>, parser generation with Parol; README explicitly describes the workflow.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="semantic_triples"><a class="header" href="#semantic_triples"><a href="https://github.com/jsinger67/semantic_triples">semantic_triples</a></a></h2>
+<p><strong>Purpose:</strong> Example project: parsing semantic triples and output as Graphviz DOT.</p>
+<p><strong>Parol Usage:</strong> Grammar in <code>semantic_triples.par</code> / <code>semantic_triples-exp.par</code>, parser generation with Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="la_dfa_2_dot"><a class="header" href="#la_dfa_2_dot"><a href="https://github.com/jsinger67/la_dfa_2_dot">la_dfa_2_dot</a></a></h2>
+<p><strong>Purpose:</strong> Tool for visualizing Parol's lookahead DFAs as Graphviz DOT.</p>
+<p><strong>Parol Usage:</strong> Custom grammar (<code>la_dfa_2_dot.par</code>), parser generation with Parol; processes parsers generated by Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="parsym"><a class="header" href="#parsym"><a href="https://github.com/jsinger67/parsym">parsym</a></a></h2>
+<p><strong>Purpose:</strong> Symbol table browser for Parol (GUI for exploring symbols).</p>
+<p><strong>Parol Usage:</strong> Uses Parol-generated symbol data structures; not a classical parser itself, but closely coupled with Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="parol_symbols"><a class="header" href="#parol_symbols"><a href="https://github.com/jsinger67/parol_symbols">parol_symbols</a></a></h2>
+<p><strong>Purpose:</strong> Viewer for Parol-generated grammar data types (Tauri/React GUI).</p>
+<p><strong>Parol Usage:</strong> Works directly with Parol-generated structures; development tool around Parol.</p>
+<p><strong>Parol Version:</strong> N/A</p>
+<h2 id="parol-ls"><a class="header" href="#parol-ls"><a href="https://github.com/jsinger67/parol-ls">parol-ls</a></a></h2>
+<p><strong>Purpose:</strong> Language Server for Parol grammars (.par files), including for VSCode.</p>
+<p><strong>Parol Usage:</strong> Language Server built with Parol itself (<code>parol_ls.par</code> / <code>parol_ls-exp.par</code>) and analyzes Parol grammars.</p>
+<p><strong>Parol Version:</strong> N/A</p>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="UsefulTips.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="QnA.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
-                            <a rel="next prefetch" href="WhoUsesParol.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <i class="fa fa-angle-right"></i>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -315,13 +254,10 @@ productions.</p>
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="UsefulTips.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="QnA.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <i class="fa fa-angle-left"></i>
                     </a>
 
-                    <a rel="next prefetch" href="WhoUsesParol.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <i class="fa fa-angle-right"></i>
-                    </a>
             </nav>
 
         </div>
