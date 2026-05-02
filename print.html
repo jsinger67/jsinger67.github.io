@@ -308,6 +308,8 @@ parol 4.0.1
 include <code>~/.cargo/bin</code>.</p>
 <h3 id="video-introduction"><a class="header" href="#video-introduction">Video Introduction</a></h3>
 <p>For a visual introduction, watch the <a href="https://youtu.be/TJMwMqD4XSo">introductory video</a> on YouTube.</p>
+<p>Consider to visit the <a href="https://www.youtube.com/@user-b5n3l">The Parol Parser Generator</a> YouTube
+channel. And if you don't want to miss new videos, please subscribe.</p>
 <h2 id="generate-a-project-with-parol"><a class="header" href="#generate-a-project-with-parol">Generate a Project with <code>parol</code></a></h2>
 <p>Use the <code>parol new</code> subcommand to create a new project:</p>
 <pre><code class="language-shell">parol new --bin --path ./my_grammar
@@ -332,8 +334,8 @@ cargo build
 dotnet build
 </code></pre>
 <blockquote>
-<p>You can safely ignore the <code>#[warn(unused_imports)]</code> warning for now. It will disappear as the
-grammar receives more content.</p>
+<p>Please note, that there is a dedicated video on YouTube about
+<a href="https://youtu.be/cOMHdoxLiYg">C# Parser Generation with Parol</a>.</p>
 </blockquote>
 <p>Run the test with the generated parser:</p>
 <pre><code class="language-shell">cargo run ./test.txt
@@ -1247,6 +1249,10 @@ directly recursive types, as this would result in infinite type sizes.</p>
 command-line switch (<code>-b</code>, <code>--min_boxes</code>) to enable box minimization. The <code>parol::build::Builder</code>
 also provides a <code>minimize_boxed_types()</code> method for use in build scripts.</p>
 <p><code>parol</code> determines where recursion cannot occur by analyzing the grammar structure.</p>
+<blockquote>
+<p>Please note, that there is a dedicated video on YouTube about
+<a href="https://youtu.be/XKaA1OUdQyw">Minimize boxed types in generated parsers</a>.</p>
+</blockquote>
 <h2 id="managing-ast-generation"><a class="header" href="#managing-ast-generation">Managing AST Generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of Elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (<code>^</code>) to prevent
@@ -1365,6 +1371,11 @@ the <a href="https://github.com/jsinger67/parol/tree/main/examples/basic_interpr
 </blockquote>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="export-model-contract"><a class="header" href="#export-model-contract">Export Model Contract</a></h1>
 <p>This chapter defines the contract for external tools that consume <code>parol export</code> output.</p>
+<h2 id="video-introduction-1"><a class="header" href="#video-introduction-1">Video Introduction</a></h2>
+<p>For a quick introduction on what parser model export can do for you, please watch the video
+<a href="https://youtu.be/xHFlxVgq6GI">Parser Model Export</a> on YouTube.</p>
+<p>Also consider to visit the <a href="https://www.youtube.com/@user-b5n3l">The Parol Parser Generator</a> YouTube
+channel. And if you don't want to miss new videos, please subscribe.</p>
 <h2 id="goal"><a class="header" href="#goal">Goal</a></h2>
 <p>The export model is meant to provide language-agnostic grammar facts that are sufficient to build
 parser/scanner generators in other ecosystems.</p>

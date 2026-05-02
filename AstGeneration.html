@@ -267,6 +267,10 @@ directly recursive types, as this would result in infinite type sizes.</p>
 command-line switch (<code>-b</code>, <code>--min_boxes</code>) to enable box minimization. The <code>parol::build::Builder</code>
 also provides a <code>minimize_boxed_types()</code> method for use in build scripts.</p>
 <p><code>parol</code> determines where recursion cannot occur by analyzing the grammar structure.</p>
+<blockquote>
+<p>Please note, that there is a dedicated video on YouTube about
+<a href="https://youtu.be/XKaA1OUdQyw">Minimize boxed types in generated parsers</a>.</p>
+</blockquote>
 <h2 id="managing-ast-generation"><a class="header" href="#managing-ast-generation">Managing AST Generation</a></h2>
 <h3 id="omission-of-elements"><a class="header" href="#omission-of-elements">Omission of Elements</a></h3>
 <p>You can suffix grammar symbols (terminals and non-terminals) with a cut operator (<code>^</code>) to prevent
