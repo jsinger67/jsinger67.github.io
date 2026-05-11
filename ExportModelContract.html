@@ -199,7 +199,7 @@ parser/scanner generators in other ecosystems.</p>
 <li>ordered non-terminals and start symbol index</li>
 <li>production list and RHS symbol structure</li>
 <li>LL(k) lookahead automata or LALR(1) parse table</li>
-<li>scanner terminals, states, comments, transitions, and lookahead expressions</li>
+<li>scanner terminals, states, comments, state-local skip token sets, transitions, and lookahead expressions</li>
 <li>production datatype metadata derived from grammar type analysis</li>
 </ul>
 <p>This data is considered portable across target languages.</p>
@@ -218,14 +218,18 @@ tool, not embedded as language-independent export metadata.</p>
 runtime style.</p>
 <h2 id="versioning-and-compatibility"><a class="header" href="#versioning-and-compatibility">Versioning and compatibility</a></h2>
 <p>The export schema version is carried in <code>ParserExportModel.version</code>.</p>
-<p>Machine-readable JSON Schema for <code>version = 1</code>:</p>
+<p>Machine-readable JSON Schema for <code>version = 2</code>:</p>
+<ul>
+<li><code>crates/parol/schemas/parser-export-model.v2.schema.json</code></li>
+</ul>
+<p>Legacy schema (still published for compatibility with older consumers):</p>
 <ul>
 <li><code>crates/parol/schemas/parser-export-model.v1.schema.json</code></li>
 </ul>
 <h3 id="quick-validation-example"><a class="header" href="#quick-validation-example">Quick validation example</a></h3>
 <p>Using <code>ajv-cli</code> (Node.js), you can validate an exported JSON file against the schema:</p>
 <pre><code class="language-bash">npx ajv-cli validate \
-	-s crates/parol/schemas/parser-export-model.v1.schema.json \
+	-s crates/parol/schemas/parser-export-model.v2.schema.json \
 	-d crates/parol/tests/data/arg_tests/export_llk.expected.json
 </code></pre>
 <p>To validate a LALR export, replace the <code>-d</code> path with your <code>export_lalr1</code> JSON (or any JSON
@@ -298,6 +302,7 @@ real-world content.</p>
 				"auto_newline": true,
 				"auto_ws": true,
 				"allow_unmatched": false,
+				"skip_tokens": [],
 				"transitions": []
 			}
 		]
@@ -350,6 +355,7 @@ real-world content.</p>
 				"auto_newline": true,
 				"auto_ws": true,
 				"allow_unmatched": false,
+				"skip_tokens": [],
 				"transitions": []
 			}
 		]

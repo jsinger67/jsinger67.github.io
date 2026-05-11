@@ -242,6 +242,44 @@ In that case, you must handle newline tokens yourself in your grammar.</p>
 <p>The scanner also skips whitespace automatically by default. To suppress this, use the <code>%auto_ws_off</code>
 directive.
 In that case, you must handle whitespace tokens yourself in your grammar.</p>
+<h3 id="configurable-skip-tokens-available-in-450"><a class="header" href="#configurable-skip-tokens-available-in-450">Configurable skip tokens (available in 4.5.0)</a></h3>
+<p>Starting with <code>parol</code> 4.5.0, you can configure additional skip tokens via <code>%skip</code>.</p>
+<p>This generalizes the skip-token concept beyond default whitespace and newline handling and is
+especially important for scanner-state-based grammars:</p>
+<ul>
+<li>You can ignore structural helper tokens (for example comment delimiters) without adding parser
+noise.</li>
+<li>You can configure skip behavior per scanner state.</li>
+<li>You can still keep strict scanner transitions with <code>%on</code>, <code>%enter</code>, <code>%push</code>, and <code>%pop</code>.</li>
+</ul>
+<p><code>%skip</code> expects a comma-separated list of primary non-terminals that represent terminals.</p>
+<pre><code class="language-parol">%start Start
+%auto_ws_off
+%skip CommentStart
+%on CommentStart %enter COMMENT
+
+%scanner COMMENT {
+    %auto_ws_off
+    %skip CommentStart, CommentEnd
+    %on CommentStart %push COMMENT
+    %on CommentEnd %pop
+}
+
+%%
+
+Start: Identifier;
+
+Identifier: /[a-zA-Z_][a-zA-Z0-9_]*/;
+CommentStart: &lt;INITIAL, COMMENT&gt;"(*";
+CommentEnd: &lt;COMMENT&gt;"*)";
+</code></pre>
+<p>Important constraints:</p>
+<ul>
+<li>Each <code>%skip</code> entry must be a primary non-terminal for a terminal.</li>
+<li>The referenced terminal must be available in the scanner state where <code>%skip</code> is declared.</li>
+<li><code>%skip</code> augments default skip behavior; <code>%auto_ws_off</code> and <code>%auto_newline_off</code> still control
+default whitespace/newline skipping.</li>
+</ul>
 <h3 id="open-scanner-states"><a class="header" href="#open-scanner-states">Open scanner states</a></h3>
 <p>Scanner modes can also be configured to tolerate unmatched tokens by specifying <code>%allow_unmatched</code>
 in the scanner section of the grammar. This allows unmatched input to be ignored instead of
