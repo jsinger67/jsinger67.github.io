@@ -1940,6 +1940,25 @@ RHS productions by factoring grammar rules, as described below.</p>
 sides of your productions are decreased. Therefore examine the productions that correlate to the
 functions where the warnings occur. Then consider to factor out parts of the RHS into separate
 productions.</p>
+<h2 id="q-how-can-i-derive-serde-traits-for-generated-ast-types"><a class="header" href="#q-how-can-i-derive-serde-traits-for-generated-ast-types">Q: How can I derive serde traits for generated AST types?</a></h2>
+<p>A: Append derive traits to generated Rust grammar-trait data types with either the Builder API or
+the CLI.</p>
+<p>In <code>build.rs</code>, add this before <code>.generate_parser()</code>:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>        .add_derives(vec![
+            "serde::Serialize".to_string(),
+            "serde::Deserialize".to_string(),
+        ])
+<span class="boring">}</span></code></pre></pre>
+<p>From the CLI, use comma-separated values:</p>
+<pre><code class="language-powershell">parol -f .\your_grammar.par -p .\src\parser.rs -a .\src\grammar_trait.rs --add-derives serde::Serialize,serde::Deserialize
+</code></pre>
+<p><code>parol</code> keeps the default derives and appends your values, resulting in generated code like:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+<span class="boring">}</span></code></pre></pre>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="who-uses-parol"><a class="header" href="#who-uses-parol">Who uses Parol</a></h1>
 <h2 id="veryl"><a class="header" href="#veryl"><a href="https://github.com/veryl-lang/veryl">Veryl</a></a></h2>
 <p><strong>Purpose:</strong> Modern Hardware Description Language (HDL) as an alternative to SystemVerilog. LL(3)
