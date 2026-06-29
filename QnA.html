@@ -233,6 +233,8 @@ pub struct ListItem&lt;'t&gt; {
 I cannot give general advice here, but there are plenty of examples that cover this topic
 thoroughly.</li>
 </ol>
+<p>If you instead prefer a runtime guard for deeply nested input, see Q:
+<a href="#q-can-i-cap-parser-depth-to-avoid-stack-overflow-like-failures-on-deeply-nested-input">Can I cap parser depth to avoid stack-overflow-like failures on deeply nested input?</a>.</p>
 <h2 id="q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem"><a class="header" href="#q-i-get-strange-errors-while-developing-my-new-grammar-and-cannot-figure-out-the-problem">Q: I get strange errors while developing my new grammar and cannot figure out the problem</a></h2>
 <p>A: Consider the following recommendations:</p>
 <h3 id="break-down-the-problem-with-as-little-input-as-possible"><a class="header" href="#break-down-the-problem-with-as-little-input-as-possible">Break down the problem with as little input as possible</a></h3>
@@ -241,6 +243,24 @@ thoroughly.</li>
 <p>The process of error recovery will surely shroud the original error location.
 Therefore it is advisable to temporarily disable it.</p>
 <p>Use the Builder API (<code>disable_recovery()</code>) or the command-line argument (<code>--disable-recovery</code>).</p>
+<h2 id="q-can-i-cap-parser-depth-to-avoid-stack-overflow-like-failures-on-deeply-nested-input"><a class="header" href="#q-can-i-cap-parser-depth-to-avoid-stack-overflow-like-failures-on-deeply-nested-input">Q: Can I cap parser depth to avoid stack-overflow-like failures on deeply nested input?</a></h2>
+<p>A: Yes. Configure a maximum parsing depth in <code>build.rs</code> or pass it on the CLI.</p>
+<p>Builder API:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>    .max_parsing_depth(2000)
+<span class="boring">}</span></code></pre></pre>
+<p>CLI:</p>
+<pre><code class="language-powershell">parol -f .\your_grammar.par -p .\src\parser.rs -a .\src\grammar_trait.rs --max-parsing-depth 2000
+</code></pre>
+<p>Notes:</p>
+<ul>
+<li>The limit is disabled by default.</li>
+<li>The measured value is parser-internal and therefore grammar-dependent.</li>
+<li>LL(k) parsers check the current production depth.</li>
+<li>LALR(1) parsers check the current parse stack size.</li>
+<li>Because LL and LR internals differ, the same numeric limit can trigger at different input nesting levels.</li>
+</ul>
 <h3 id="enable-traces"><a class="header" href="#enable-traces">Enable traces</a></h3>
 <p>In all projects generated with <code>parol new</code>, <code>env_logger</code> is built in. First activate all traces.
 I will show the principle in PowerShell because this works on Windows as well as on Linux.</p>
