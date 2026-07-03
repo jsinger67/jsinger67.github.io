@@ -1934,6 +1934,8 @@ in the generated parser</li>
 <li>LL(k) and LALR(1) parsers check the current production depth and do not take into account
 productions with "push semantics"; that is, lists based on repetition are flattened rather than
 explicitly captured.</li>
+<li>The parser terminates with a <code>parol_runtime::ParserError::MaxParsingDepthExceeded</code> instead of
+crashing.</li>
 </ul>
 <h2 id="q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments"><a class="header" href="#q-i-get-warnings-in-generated-code-this-function-has-too-many-arguments">Q: I get warnings in generated code 'This function has too many arguments'</a></h2>
 <p>A: Configure the builder in your <code>build.rs</code> to let <code>parol</code> generate a</p>
